@@ -1,6 +1,6 @@
 import SwiftUI
 import SwiftData
-import UserNotifications
+@preconcurrency import UserNotifications
 
 @main
 struct BabyDiaryApp: App {
@@ -43,7 +43,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 }
 
-extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
+extension AppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,
