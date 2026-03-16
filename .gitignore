@@ -1,0 +1,71 @@
+# ========================
+# 보안 민감 파일 (절대 커밋 금지)
+# ========================
+
+# API 키 및 시크릿
+*.env
+.env
+.env.*
+.env.local
+.env.development
+.env.staging
+.env.production
+secrets.json
+secrets.yaml
+secrets.yml
+*secret*
+*secrets*
+*api_key*
+*apikey*
+
+# AWS 자격증명
+.aws/
+aws-credentials
+credentials.json
+
+# Apple 인증서 및 프로비저닝 프로파일
+*.p12
+*.cer
+*.mobileprovision
+*.certSigningRequest
+AuthKey_*.p8
+
+# Xcode 민감 파일
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+
+# CocoaPods
+Pods/
+
+# Swift Package Manager
+.build/
+*.resolved
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# 로그 파일
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 빌드 산출물
+build/
+dist/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# 테스트 커버리지
+coverage/
+*.lcov
