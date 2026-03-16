@@ -1,0 +1,32 @@
+name: BabyDiary
+options:
+  bundleIdPrefix: com.youngbaby
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16"
+
+settings:
+  SWIFT_VERSION: "6.0"
+
+targets:
+  BabyDiary:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: BabyDiary
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.youngbaby.app
+      PRODUCT_NAME: 아기 일기장
+      SWIFT_VERSION: "6.0"
+      DEVELOPMENT_TEAM: ""
+    info:
+      path: BabyDiary/Resources/Info.plist
+      properties:
+        UILaunchScreen:
+          UIColorName: PastelBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSRemoteNotificationUsageDescription: "수유 알람 수신을 위해 알림 권한이 필요합니다."
+        UIBackgroundModes:
+          - remote-notification
