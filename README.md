@@ -23,7 +23,7 @@
 
 | 단계 | 내용 | 상태 |
 |------|------|------|
-| 실기기 통합 테스트 | Cognito 회원가입 → 수유기록 → AI 추천 확인 | ⏳ 진행 필요 |
+| 실기기 통합 테스트 | Cognito 회원가입 → 수유기록 → AI 추천 확인 | ✅ 완료 |
 | APNs 알람 | Apple Developer Program($99/년) 등록 후 진행 | ⏳ 추후 |
 | 5. 유닛 테스트 | `6.test.md` | ⏳ 미시작 |
 | 6. CI/CD | `7.cicd.md` | ⏳ 미시작 |
@@ -165,14 +165,14 @@ VPC: 10.100.0.0/16
 
 ## 다음 작업 순서
 
-### Step 1. 실기기 통합 테스트
-- [ ] Xcode Build Settings에 `AppConfig.swift` 값 확인 (Config.xcconfig 불필요 — AppConfig.swift 방식)
-- [ ] Cognito 회원가입 (이메일 + 비밀번호 8자 이상, 대문자·소문자·숫자·특수문자 포함)
-- [ ] 이메일 인증 코드 확인
-- [ ] 로그인 → 온보딩 → 홈 화면 진입
-- [ ] 수유 기록 → API → DynamoDB 저장 확인
-- [ ] 어드바이저 탭 → Bedrock Claude AI 추천 확인
-- [ ] 인사이트 탭 → 데이터 분석 확인
+### ~~Step 1. 실기기 통합 테스트~~ ✅ 완료
+- [x] Xcode Build Settings에 `AppConfig.swift` 값 확인 (Config.xcconfig 불필요 — AppConfig.swift 방식)
+- [x] Cognito 회원가입 (이메일 + 비밀번호 8자 이상, 대문자·소문자·숫자·특수문자 포함)
+- [x] 이메일 인증 코드 확인
+- [x] 로그인 → 온보딩 → 홈 화면 진입
+- [x] 수유 기록 → API → DynamoDB 저장 확인
+- [x] 어드바이저 탭 → Bedrock Claude AI 추천 확인
+- [x] 인사이트 탭 → 데이터 분석 확인
 
 ### Step 2. APNs 알람 (추후)
 > Apple Developer Program($99/년) 등록 후 진행
