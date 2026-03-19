@@ -16,9 +16,13 @@ struct BabyDiaryApp: App {
         }
     }()
 
+    @StateObject private var authManager = AuthManager()
+
     var body: some Scene {
         WindowGroup {
             RootView()
+                .preferredColorScheme(.light)
+                .environmentObject(authManager)
         }
         .modelContainer(sharedModelContainer)
     }

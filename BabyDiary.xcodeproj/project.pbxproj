@@ -15,6 +15,7 @@
 		3D66FE997A8415B4D0D43D78 /* FeedingInputModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 442025F29BB6846B40271DC3 /* FeedingInputModal.swift */; };
 		6B44343519E13F593ED92077 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06566A46AD3BA43DC86640E /* HomeView.swift */; };
 		6D5F09C64D134EC52133843A /* AdvisorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1F2BCA1C7EE93655E8F4B17 /* AdvisorView.swift */; };
+		8B051AAA4248C51FCEB0D906 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FED48ACF7E2CC2984E715A2E /* Assets.xcassets */; };
 		93E9CB95F0CA4343EF7EFC65 /* BabyDiaryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F02768EF6F0C17AB201C4F4 /* BabyDiaryApp.swift */; };
 		99D468FC10C2C7DDE970882E /* FeedingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFC2E2870D48152938327CBF /* FeedingService.swift */; };
 		B459E82FDAA5E4741D7E9910 /* AlarmService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6E11C2DFA94B3D961491619 /* AlarmService.swift */; };
@@ -25,6 +26,10 @@
 		EA1514BF08C8C39601D8FD16 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62CB3FCF25586BC5FB4035F6 /* UserProfile.swift */; };
 		EE5AEB567AF9913E67673C9C /* AgeCalculatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4830D0EC946EFD5A098750DE /* AgeCalculatorService.swift */; };
 		F4A7EE04102F5581A87A7A3E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19051E50B4A3842785812CCA /* MainTabView.swift */; };
+		AA11BB22CC33DD44EE551101 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA11BB22CC33DD44EE551100 /* AppConfig.swift */; };
+		BB11BB22CC33DD44EE551101 /* CognitoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB11BB22CC33DD44EE551100 /* CognitoService.swift */; };
+		CC11BB22CC33DD44EE551101 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC11BB22CC33DD44EE551100 /* AuthManager.swift */; };
+		DD11BB22CC33DD44EE551101 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD11BB22CC33DD44EE551100 /* AuthView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,7 +42,7 @@
 		4F02768EF6F0C17AB201C4F4 /* BabyDiaryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BabyDiaryApp.swift; sourceTree = "<group>"; };
 		62CB3FCF25586BC5FB4035F6 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		6DC881DD6444B7080C04C4F7 /* BowelRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BowelRecord.swift; sourceTree = "<group>"; };
-		75A3C34D1CA00285FB7EA36C /* BabyDiary.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BabyDiary.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		75A3C34D1CA00285FB7EA36C /* 아기 일기장.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "아기 일기장.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B9F7F329AEA1096A50E3680 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		9E7957A6FFBCBC5D8AEEF5AC /* FeedingRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedingRecord.swift; sourceTree = "<group>"; };
 		A867B0F671E70820C064AFBC /* AdvisorCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvisorCardView.swift; sourceTree = "<group>"; };
@@ -48,6 +53,11 @@
 		E06566A46AD3BA43DC86640E /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		E48054E79DA77583BABD5F24 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
 		F4B28E0CC241ABC7A1C3E133 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		FED48ACF7E2CC2984E715A2E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA11BB22CC33DD44EE551100 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		BB11BB22CC33DD44EE551100 /* CognitoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CognitoService.swift; sourceTree = "<group>"; };
+		CC11BB22CC33DD44EE551100 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		DD11BB22CC33DD44EE551100 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -57,9 +67,27 @@
 				4830D0EC946EFD5A098750DE /* AgeCalculatorService.swift */,
 				B6E11C2DFA94B3D961491619 /* AlarmService.swift */,
 				E48054E79DA77583BABD5F24 /* APIService.swift */,
+				CC11BB22CC33DD44EE551100 /* AuthManager.swift */,
+				BB11BB22CC33DD44EE551100 /* CognitoService.swift */,
 				DFC2E2870D48152938327CBF /* FeedingService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		EE11BB22CC33DD44EE551100 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				AA11BB22CC33DD44EE551100 /* AppConfig.swift */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		FF11BB22CC33DD44EE551100 /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				DD11BB22CC33DD44EE551100 /* AuthView.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		01FE9D35B8260DF21D466116 /* Insights */ = {
@@ -90,7 +118,9 @@
 		42E531F801D0438C7FE233A1 /* BabyDiary */ = {
 			isa = PBXGroup;
 			children = (
+				FED48ACF7E2CC2984E715A2E /* Assets.xcassets */,
 				34C8786E199340F7C2C4F65B /* App */,
+				EE11BB22CC33DD44EE551100 /* Config */,
 				63D0238C48103C1EF6C48E6C /* Models */,
 				A314F73EDC210E0ECB183A54 /* Resources */,
 				01C80AB52E347EB732C0C019 /* Services */,
@@ -149,6 +179,7 @@
 			children = (
 				19051E50B4A3842785812CCA /* MainTabView.swift */,
 				CCC191B79BC5342D7BDD78F7 /* Advisor */,
+				FF11BB22CC33DD44EE551100 /* Auth */,
 				49C4FC9E632CA516A019C0F3 /* Home */,
 				01FE9D35B8260DF21D466116 /* Insights */,
 				D843DDEFFCB97C711D9002DA /* Onboarding */,
@@ -160,7 +191,7 @@
 		E1FDFEE244D20E1409F49340 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75A3C34D1CA00285FB7EA36C /* BabyDiary.app */,
+				75A3C34D1CA00285FB7EA36C /* 아기 일기장.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -181,6 +212,7 @@
 			buildConfigurationList = D581B9285B4AEF45A683C15B /* Build configuration list for PBXNativeTarget "BabyDiary" */;
 			buildPhases = (
 				C9A85C57BBDD0F5F1BE27B25 /* Sources */,
+				1DAF6BAB08E5CA30E1B5C3EF /* Resources */,
 			);
 			buildRules = (
 			);
@@ -190,7 +222,7 @@
 			packageProductDependencies = (
 			);
 			productName = BabyDiary;
-			productReference = 75A3C34D1CA00285FB7EA36C /* BabyDiary.app */;
+			productReference = 75A3C34D1CA00285FB7EA36C /* 아기 일기장.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -201,11 +233,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-					A68AA7335EC1761E9A73A6DB = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = C8ABFBA6B1579CF90C36924B /* Build configuration list for PBXProject "BabyDiary" */;
 			developmentRegion = en;
@@ -226,6 +253,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		1DAF6BAB08E5CA30E1B5C3EF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B051AAA4248C51FCEB0D906 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		C9A85C57BBDD0F5F1BE27B25 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -236,9 +274,13 @@
 				6D5F09C64D134EC52133843A /* AdvisorView.swift in Sources */,
 				EE5AEB567AF9913E67673C9C /* AgeCalculatorService.swift in Sources */,
 				B459E82FDAA5E4741D7E9910 /* AlarmService.swift in Sources */,
+				AA11BB22CC33DD44EE551101 /* AppConfig.swift in Sources */,
+				DD11BB22CC33DD44EE551101 /* AuthView.swift in Sources */,
+				CC11BB22CC33DD44EE551101 /* AuthManager.swift in Sources */,
 				93E9CB95F0CA4343EF7EFC65 /* BabyDiaryApp.swift in Sources */,
 				B7C97977DB5E9C11E0F33270 /* BowelInputModal.swift in Sources */,
 				C3CF1D1A057630A5B17DA914 /* BowelRecord.swift in Sources */,
+				BB11BB22CC33DD44EE551101 /* CognitoService.swift in Sources */,
 				3D66FE997A8415B4D0D43D78 /* FeedingInputModal.swift in Sources */,
 				16956AEA99D40F421FFD3602 /* FeedingRecord.swift in Sources */,
 				99D468FC10C2C7DDE970882E /* FeedingService.swift in Sources */,
@@ -379,7 +421,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = CS2LWVP74A;
 				INFOPLIST_FILE = BabyDiary/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -399,7 +441,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = CS2LWVP74A;
 				INFOPLIST_FILE = BabyDiary/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

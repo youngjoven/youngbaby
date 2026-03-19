@@ -13,42 +13,54 @@ struct OnboardingView: View {
         ZStack {
             Color("PastelBackground").ignoresSafeArea()
 
-            VStack(spacing: 32) {
-                // 헤더
-                VStack(spacing: 8) {
-                    Text("🍼")
-                        .font(.system(size: 64))
-                    Text("아기 일기장")
-                        .font(.largeTitle.bold())
-                        .foregroundColor(Color("PastelPink"))
-                    Text("아이의 수유·배변을 기록해요")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                // 스크롤 영역 (상태바 아래부터 시작)
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // 헤더
+                        VStack(spacing: 6) {
+                            Text("🍼")
+                                .font(.system(size: 48))
+                                .padding(.top, 16)
+                            Text("아기 일기장")
+                                .font(.title.bold())
+                                .foregroundColor(Color("PastelPink"))
+                            Text("아이의 수유·배변을 기록해요")
+                                .font(.subheadline)
+                                .foregroundColor(Color(white: 0.35))
+                        }
+
+                        // 입력 카드
+                        VStack(spacing: 12) {
+                            InputCard(title: "아이 이름", systemImage: "face.smiling") {
+                                TextField(
+                                    text: $babyName,
+                                    prompt: Text("이름을 입력하세요").foregroundStyle(Color(white: 0.55))
+                                ) { EmptyView() }
+                                .textFieldStyle(.plain)
+                                .foregroundColor(Color(white: 0.1))
+                            }
+
+                            InputCard(title: "아이 생년월일", systemImage: "calendar") {
+                                DatePicker("", selection: $babyBirthDate, in: ...Date(), displayedComponents: .date)
+                                    .labelsHidden()
+                            }
+
+                            InputCard(title: "어머니 이름", systemImage: "person.fill") {
+                                TextField(
+                                    text: $motherName,
+                                    prompt: Text("이름을 입력하세요").foregroundStyle(Color(white: 0.55))
+                                ) { EmptyView() }
+                                .textFieldStyle(.plain)
+                                .foregroundColor(Color(white: 0.1))
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 8)
+                    }
                 }
-                .padding(.top, 40)
 
-                // 입력 카드
-                VStack(spacing: 20) {
-                    InputCard(title: "아이 이름", systemImage: "face.smiling") {
-                        TextField("이름을 입력하세요", text: $babyName)
-                            .textFieldStyle(.plain)
-                    }
-
-                    InputCard(title: "아이 생년월일", systemImage: "calendar") {
-                        DatePicker("", selection: $babyBirthDate, in: ...Date(), displayedComponents: .date)
-                            .labelsHidden()
-                    }
-
-                    InputCard(title: "어머니 이름", systemImage: "person.fill") {
-                        TextField("이름을 입력하세요", text: $motherName)
-                            .textFieldStyle(.plain)
-                    }
-                }
-                .padding(.horizontal)
-
-                Spacer()
-
-                // 시작 버튼
+                // 시작하기 버튼 — 항상 하단에 고정
                 Button(action: saveProfile) {
                     Text("시작하기")
                         .font(.headline)
@@ -62,6 +74,7 @@ struct OnboardingView: View {
                 }
                 .disabled(!isFormValid)
                 .padding(.horizontal)
+                .padding(.top, 12)
                 .padding(.bottom, 32)
             }
         }
@@ -73,13 +86,18 @@ struct OnboardingView: View {
     }
 
     private func saveProfile() {
-        let profile = UserProfile(
-            babyName: babyName.trimmingCharacters(in: .whitespaces),
-            babyBirthDate: babyBirthDate,
-            motherName: motherName.trimmingCharacters(in: .whitespaces)
-        )
+        let name = babyName.trimmingCharacters(in: .whitespaces)
+        let mother = motherName.trimmingCharacters(in: .whitespaces)
+        let profile = UserProfile(babyName: name, babyBirthDate: babyBirthDate, motherName: mother)
         modelContext.insert(profile)
-        Task { await AlarmService.requestPermission() }
+        Task {
+            await AlarmService.requestPermission()
+            try? await APIService.shared.uploadProfile(
+                babyName: name,
+                babyBirthDate: babyBirthDate,
+                motherName: mother
+            )
+        }
     }
 }
 
@@ -91,16 +109,17 @@ struct InputCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: systemImage)
-                .font(.subheadline.bold())
-                .foregroundColor(Color("PastelPink"))
+                .font(.caption.bold())
+                .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
             content
-                .padding(.vertical, 4)
+                .padding(.vertical, 2)
             Divider()
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color.white))
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.white))
+        .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
     }
 }

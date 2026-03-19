@@ -5,9 +5,7 @@ import Foundation
 actor APIService {
     static let shared = APIService()
 
-    private var baseURL: String {
-        Bundle.main.object(forInfoDictionaryKey: "API_BASE_URL") as? String ?? ""
-    }
+    private var baseURL: String { AppConfig.apiBaseURL }
 
     private var idToken: String = ""
 
@@ -54,6 +52,21 @@ actor APIService {
         let body: [String: Any] = [
             "bowelTime": ISO8601DateFormatter().string(from: bowelTime),
             "condition": condition
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        _ = try await URLSession.shared.data(for: request)
+    }
+
+    // MARK: - Profile
+
+    func uploadProfile(babyName: String, babyBirthDate: Date, motherName: String) async throws {
+        guard var request = authorizedRequest(path: "/profile", method: "PUT") else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let body: [String: Any] = [
+            "babyName": babyName,
+            "babyBirthDate": formatter.string(from: babyBirthDate),
+            "motherName": motherName
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         _ = try await URLSession.shared.data(for: request)

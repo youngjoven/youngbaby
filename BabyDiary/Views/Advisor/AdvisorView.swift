@@ -10,44 +10,37 @@ struct AdvisorView: View {
             ZStack {
                 Color("PastelBackground").ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // 헤더
-                        VStack(spacing: 8) {
-                            Text("✨")
-                                .font(.system(size: 48))
-                            Text("AI 수유 어드바이저")
-                                .font(.title2.bold())
-                            Text("최근 7일 수유·배변 기록을 분석합니다")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.top)
-
-                        if isLoading {
-                            ProgressView("분석 중...")
-                                .padding()
-                        } else if let response = response {
+                if isLoading {
+                    ProgressView("분석 중...")
+                } else if let error = errorMessage {
+                    errorStateView(message: error)
+                } else if let response = response {
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
                             advisorContent(response: response)
-                        } else {
-                            emptyStateView
                         }
-
-                        if let error = errorMessage {
-                            Text(error)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding()
-                        }
-
-                        Spacer(minLength: 40)
+                        .padding()
                     }
-                    .padding()
+                } else {
+                    emptyStateView
                 }
             }
-            .navigationTitle("어드바이저")
-            .navigationBarTitleDisplayMode(.large)
-            .task { await loadAdvice() }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 6) {
+                        Text("✨")
+                            .font(.subheadline)
+                        Text("어드바이저")
+                            .font(.headline.bold())
+                            .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8))
+                    }
+                }
+            }
+            .onAppear { Task { await loadAdvice() } }
             .refreshable { await loadAdvice() }
         }
     }
@@ -60,19 +53,19 @@ struct AdvisorView: View {
                 emoji: "⏰",
                 title: "다음 수유 시간",
                 content: response.nextFeedingAdvice,
-                color: Color("PastelPink")
+                color: Color(red: 0.85, green: 0.25, blue: 0.45)
             )
             AdvisorItemCard(
                 emoji: "🍼",
                 title: "분유량 조언",
                 content: response.amountAdvice,
-                color: Color("PastelMint")
+                color: Color(red: 0.1, green: 0.6, blue: 0.45)
             )
             AdvisorItemCard(
                 emoji: "💬",
                 title: "수유·배변 종합 의견",
                 content: response.overallOpinion,
-                color: Color("PastelPurple")
+                color: Color(red: 0.5, green: 0.2, blue: 0.8)
             )
 
             // 면책 문구
@@ -89,11 +82,31 @@ struct AdvisorView: View {
         VStack(spacing: 12) {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
-                .foregroundColor(Color("PastelPurple").opacity(0.5))
+                .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8).opacity(0.5))
             Text("수유 기록이 쌓이면\nAI 추천이 표시됩니다")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+        }
+        .padding(40)
+    }
+
+    private func errorStateView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundColor(.orange)
+            Text("추천을 불러오지 못했습니다")
+                .font(.headline)
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            Button("다시 시도") {
+                Task { await loadAdvice() }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color(red: 0.5, green: 0.2, blue: 0.8))
         }
         .padding(40)
     }
@@ -106,7 +119,7 @@ struct AdvisorView: View {
         do {
             response = try await APIService.shared.fetchAdvice()
         } catch {
-            errorMessage = "추천을 불러오지 못했습니다."
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

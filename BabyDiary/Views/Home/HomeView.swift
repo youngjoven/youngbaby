@@ -2,6 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    @Binding var selectedTab: Int
+
     @Query private var profiles: [UserProfile]
     @Query(sort: \FeedingRecord.feedingTime, order: .reverse) private var feedings: [FeedingRecord]
     @Query(sort: \BowelRecord.bowelTime, order: .reverse) private var bowels: [BowelRecord]
@@ -30,10 +32,13 @@ struct HomeView: View {
                         // 수유·배변 기록 버튼
                         recordButtonsView
 
-                        // 어드바이저 추천 카드 (수유 후 자동 표시)
+                        // 어드바이저 추천 카드 (수유 후 자동 표시, 탭하면 어드바이저 화면으로 이동)
                         if showAdvisorCard, let advice = advisorResponse {
-                            AdvisorCardView(response: advice)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                            Button { selectedTab = 2 } label: {
+                                AdvisorCardView(response: advice)
+                            }
+                            .buttonStyle(.plain)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
 
                         Spacer(minLength: 40)
@@ -41,8 +46,22 @@ struct HomeView: View {
                     .padding()
                 }
             }
-            .navigationTitle("아기 일기장")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 6) {
+                        Text("🍼")
+                            .font(.subheadline)
+                        Text("아기 일기장")
+                            .font(.headline.bold())
+                            .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                    }
+                }
+            }
+            .onAppear { syncProfileIfNeeded() }
             .sheet(isPresented: $showFeedingInput) {
                 FeedingInputModal { amountMl in
                     saveFeedingRecord(amountMl: amountMl)
@@ -93,7 +112,7 @@ struct HomeView: View {
                     emoji: "💩",
                     title: "배변",
                     value: "\(todayBowelCount)회",
-                    subtitle: lastBowelCondition
+                    subtitle: lastBowelSummary
                 )
                 SummaryTile(
                     emoji: "⏰",
@@ -116,7 +135,7 @@ struct HomeView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 16).fill(Color("PastelPink")))
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(red: 0.85, green: 0.25, blue: 0.45)))
             }
 
             Button(action: { showBowelInput = true }) {
@@ -125,7 +144,7 @@ struct HomeView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 16).fill(Color("PastelMint")))
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(red: 0.1, green: 0.6, blue: 0.45)))
             }
         }
     }
@@ -136,8 +155,9 @@ struct HomeView: View {
         bowels.filter { Calendar.current.isDateInToday($0.bowelTime) }.count
     }
 
-    private var lastBowelCondition: String {
-        bowels.first.map { $0.bowelCondition.displayName } ?? "-"
+    private var lastBowelSummary: String {
+        guard let last = bowels.first else { return "-" }
+        return "\(last.bowelCondition.emoji) 최근 \(last.bowelCondition.displayName)"
     }
 
     private var nextFeedingTimeText: String {
@@ -146,6 +166,19 @@ struct HomeView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: next)
+    }
+
+    // MARK: - 프로필 동기화
+
+    private func syncProfileIfNeeded() {
+        guard let profile = profile else { return }
+        Task {
+            try? await APIService.shared.uploadProfile(
+                babyName: profile.babyName,
+                babyBirthDate: profile.babyBirthDate,
+                motherName: profile.motherName
+            )
+        }
     }
 
     // MARK: - 기록 저장
@@ -203,9 +236,9 @@ struct SummaryTile: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(emoji).font(.title2)
-            Text(title).font(.caption).foregroundColor(.secondary)
-            Text(value).font(.headline.bold())
-            Text(subtitle).font(.caption2).foregroundColor(.secondary)
+            Text(title).font(.caption).foregroundColor(Color(white: 0.45))
+            Text(value).font(.headline.bold()).foregroundColor(Color(white: 0.1))
+            Text(subtitle).font(.caption2).foregroundColor(Color(white: 0.45))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)

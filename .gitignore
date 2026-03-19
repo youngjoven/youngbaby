@@ -6,6 +6,9 @@
 Config.xcconfig
 *.xcconfig
 
+# AWS 설정값 포함 Swift 파일 (절대 커밋 금지)
+BabyDiary/Config/AppConfig.swift
+
 # API 키 및 시크릿
 *.env
 .env
@@ -26,6 +29,19 @@ secrets.yml
 .aws/
 aws-credentials
 credentials.json
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
 # Apple 인증서 및 프로비저닝 프로파일
 *.p12
@@ -69,6 +85,9 @@ dist/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Terraform Lambda 빌드 산출물
+**/.lambda_zips/
 
 # 테스트 커버리지
 coverage/

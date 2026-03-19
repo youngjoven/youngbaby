@@ -16,7 +16,9 @@ struct RecordView: View {
                 VStack(spacing: 0) {
                     // 통계 요약
                     statisticsView
-                        .padding()
+                        .padding(.horizontal)
+                        .padding(.top, 6)
+                        .padding(.bottom, 10)
 
                     // 수유 / 배변 탭 전환
                     Picker("", selection: $selectedTab) {
@@ -30,17 +32,15 @@ struct RecordView: View {
                     List {
                         if selectedTab == 0 {
                             ForEach(feedings) { record in
-                                FeedingRowView(record: record)
-                            }
-                            .onDelete { indexSet in
-                                indexSet.forEach { modelContext.delete(feedings[$0]) }
+                                FeedingRowView(record: record) {
+                                    modelContext.delete(record)
+                                }
                             }
                         } else {
                             ForEach(bowels) { record in
-                                BowelRowView(record: record)
-                            }
-                            .onDelete { indexSet in
-                                indexSet.forEach { modelContext.delete(bowels[$0]) }
+                                BowelRowView(record: record) {
+                                    modelContext.delete(record)
+                                }
                             }
                         }
                     }
@@ -49,8 +49,21 @@ struct RecordView: View {
                     .background(Color("PastelBackground"))
                 }
             }
-            .navigationTitle("기록")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 6) {
+                        Text("📋")
+                            .font(.subheadline)
+                        Text("기록")
+                            .font(.headline.bold())
+                            .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                    }
+                }
+            }
         }
     }
 
@@ -65,13 +78,13 @@ struct RecordView: View {
             HStack(spacing: 12) {
                 StatCard(title: "평균 수유 간격",
                          value: averageIntervalText,
-                         color: Color("PastelPink"))
+                         color: Color(red: 0.85, green: 0.25, blue: 0.45))
                 StatCard(title: "1회 평균 분유량",
                          value: averageAmountText,
-                         color: Color("PastelMint"))
+                         color: Color(red: 0.1, green: 0.6, blue: 0.45))
                 StatCard(title: "오늘 총 분유량",
                          value: "\(FeedingService.dailyTotal(records: feedings))ml",
-                         color: Color("PastelPurple"))
+                         color: Color(red: 0.5, green: 0.2, blue: 0.8))
             }
         }
         .padding()
@@ -94,6 +107,7 @@ struct RecordView: View {
 
 struct FeedingRowView: View {
     let record: FeedingRecord
+    let onDelete: () -> Void
 
     var body: some View {
         HStack {
@@ -102,20 +116,22 @@ struct FeedingRowView: View {
                     .font(.headline)
                 Text(record.feedingTime, style: .date)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(white: 0.5))
             }
             Spacer()
             HStack(spacing: 4) {
                 Text("🍼")
                 Text("\(record.amountMl)ml")
                     .font(.headline)
-                    .foregroundColor(Color("PastelPink"))
+                    .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
             }
-            if record.syncedAt == nil {
-                Image(systemName: "icloud.slash")
-                    .font(.caption)
-                    .foregroundColor(.orange)
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.subheadline)
+                    .foregroundColor(Color.red.opacity(0.7))
             }
+            .buttonStyle(.plain)
+            .padding(.leading, 8)
         }
         .padding(.vertical, 4)
     }
@@ -125,6 +141,7 @@ struct FeedingRowView: View {
 
 struct BowelRowView: View {
     let record: BowelRecord
+    let onDelete: () -> Void
 
     var body: some View {
         HStack {
@@ -133,20 +150,22 @@ struct BowelRowView: View {
                     .font(.headline)
                 Text(record.bowelTime, style: .date)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(Color(white: 0.5))
             }
             Spacer()
             HStack(spacing: 4) {
                 Text(record.bowelCondition.emoji)
                 Text(record.bowelCondition.displayName)
                     .font(.headline)
-                    .foregroundColor(Color("PastelMint"))
+                    .foregroundColor(Color(red: 0.1, green: 0.6, blue: 0.45))
             }
-            if record.syncedAt == nil {
-                Image(systemName: "icloud.slash")
-                    .font(.caption)
-                    .foregroundColor(.orange)
+            Button(action: onDelete) {
+                Image(systemName: "trash")
+                    .font(.subheadline)
+                    .foregroundColor(Color.red.opacity(0.7))
             }
+            .buttonStyle(.plain)
+            .padding(.leading, 8)
         }
         .padding(.vertical, 4)
     }

@@ -8,10 +8,10 @@ struct AdvisorCardView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "sparkles")
-                    .foregroundColor(Color("PastelPurple"))
+                    .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8))
                 Text("AI 수유 어드바이저")
                     .font(.headline)
-                    .foregroundColor(Color("PastelPurple"))
+                    .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8))
                 Spacer()
             }
 
@@ -29,8 +29,8 @@ struct AdvisorCardView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color("PastelPurple").opacity(0.08))
-                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color("PastelPurple").opacity(0.3), lineWidth: 1))
+                .fill(Color(red: 0.5, green: 0.2, blue: 0.8).opacity(0.08))
+                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(red: 0.5, green: 0.2, blue: 0.8).opacity(0.3), lineWidth: 1))
         )
     }
 }
