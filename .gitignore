@@ -1,0 +1,100 @@
+# ========================
+# 보안 민감 파일 (절대 커밋 금지)
+# ========================
+
+# 설계 문서 및 프레젠테이션 (내부 자료, 공개 금지)
+*.md
+*.pptx
+*.ppt
+*.key
+
+# Xcode 설정 파일 (API URL, Cognito 설정 등 민감 정보 포함)
+Config.xcconfig
+*.xcconfig
+
+# AWS 설정값 포함 Swift 파일 (절대 커밋 금지)
+BabyDiary/Config/AppConfig.swift
+
+# API 키 및 시크릿
+*.env
+.env
+.env.*
+.env.local
+.env.development
+.env.staging
+.env.production
+secrets.json
+secrets.yaml
+secrets.yml
+*secret*
+*secrets*
+*api_key*
+*apikey*
+
+# AWS 자격증명
+.aws/
+aws-credentials
+credentials.json
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+.terraformrc
+terraform.rc
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Apple 인증서 및 프로비저닝 프로파일
+*.p12
+*.cer
+*.mobileprovision
+*.certSigningRequest
+AuthKey_*.p8
+
+# Xcode 민감 파일
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+
+# CocoaPods
+Pods/
+
+# Swift Package Manager
+.build/
+*.resolved
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# 로그 파일
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 빌드 산출물
+build/
+dist/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Terraform Lambda 빌드 산출물
+**/.lambda_zips/
+
+# 테스트 커버리지
+coverage/
+*.lcov
