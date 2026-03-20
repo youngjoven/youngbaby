@@ -56,7 +56,9 @@ override.tf.json
 *.certSigningRequest
 AuthKey_*.p8
 
-# Xcode 민감 파일
+# Xcode 프로젝트 및 민감 파일 (로컬 전용)
+*.xcodeproj/
+*.xcworkspace/
 xcuserdata/
 *.xccheckout
 *.moved-aside
