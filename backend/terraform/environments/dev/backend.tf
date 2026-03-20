@@ -10,7 +10,7 @@
 # ============================================================
 terraform {
   backend "s3" {
-    bucket         = "youngbaby-terraform-state-912542578074"
+    bucket         = "youngbaby-terraform-state-[ACCOUNT_ID]"
     key            = "dev/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "youngbaby-terraform-lock"

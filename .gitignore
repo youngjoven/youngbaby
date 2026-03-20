@@ -2,6 +2,12 @@
 # 보안 민감 파일 (절대 커밋 금지)
 # ========================
 
+# 설계 문서 및 프레젠테이션 (내부 자료, 공개 금지)
+*.md
+*.pptx
+*.ppt
+*.key
+
 # Xcode 설정 파일 (API URL, Cognito 설정 등 민감 정보 포함)
 Config.xcconfig
 *.xcconfig
