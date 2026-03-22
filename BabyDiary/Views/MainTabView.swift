@@ -20,6 +20,10 @@ struct MainTabView: View {
             InsightsView()
                 .tabItem { Label("인사이트", systemImage: "chart.bar.fill") }
                 .tag(3)
+
+            SettingsView()
+                .tabItem { Label("설정", systemImage: "gearshape.fill") }
+                .tag(4)
         }
         .tint(Color(red: 0.85, green: 0.25, blue: 0.45))
     }

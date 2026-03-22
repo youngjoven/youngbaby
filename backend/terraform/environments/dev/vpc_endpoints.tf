@@ -19,15 +19,16 @@ resource "aws_vpc_endpoint" "dynamodb" {
 }
 
 # ============================
-# Interface Endpoints (Multi-AZ: us-east-1a + us-east-1b)
-# AZ당 ENI 1개 생성 → ~$7.20/월/엔드포인트 × 2 AZ = ~$14.40/월
+# Interface Endpoints (단일 AZ: us-east-1a만 사용)
+# AZ당 $0.01/hr → 1 AZ만 사용해 비용 절반으로 절감
+# cloudwatch_logs: Lambda 로그는 Lambda 서비스 인프라가 직접 처리 → 엔드포인트 불필요
 # ============================
 resource "aws_vpc_endpoint" "bedrock_runtime" {
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.aws_region}.bedrock-runtime"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids          = [aws_subnet.private_a.id]
   security_group_ids  = [aws_security_group.vpc_endpoint.id]
   tags = { Name = "youngbaby-bedrock-ep-${var.stage}" }
 }
@@ -37,19 +38,9 @@ resource "aws_vpc_endpoint" "sns" {
   service_name        = "com.amazonaws.${var.aws_region}.sns"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids          = [aws_subnet.private_a.id]
   security_group_ids  = [aws_security_group.vpc_endpoint.id]
   tags = { Name = "youngbaby-sns-ep-${var.stage}" }
-}
-
-resource "aws_vpc_endpoint" "cloudwatch_logs" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.${var.aws_region}.logs"
-  vpc_endpoint_type   = "Interface"
-  private_dns_enabled = true
-  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  security_group_ids  = [aws_security_group.vpc_endpoint.id]
-  tags = { Name = "youngbaby-logs-ep-${var.stage}" }
 }
 
 resource "aws_vpc_endpoint" "scheduler" {
@@ -57,7 +48,7 @@ resource "aws_vpc_endpoint" "scheduler" {
   service_name        = "com.amazonaws.${var.aws_region}.scheduler"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
-  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  subnet_ids          = [aws_subnet.private_a.id]
   security_group_ids  = [aws_security_group.vpc_endpoint.id]
   tags = { Name = "youngbaby-scheduler-ep-${var.stage}" }
 }

@@ -5,14 +5,17 @@ import Foundation
 @MainActor
 class AuthManager: ObservableObject {
     @Published private(set) var isLoggedIn = false
+    private(set) var accessToken = ""
 
-    func login(idToken: String) async {
+    func login(idToken: String, accessToken: String) async {
         await APIService.shared.setIdToken(idToken)
+        self.accessToken = accessToken
         isLoggedIn = true
     }
 
     func logout() {
         Task { await APIService.shared.setIdToken("") }
+        accessToken = ""
         isLoggedIn = false
     }
 }

@@ -1,0 +1,21 @@
+# ============================================================
+# Remote Backend 설정
+#
+# 사용법:
+#   1. 이 파일을 backend.tf로 복사: cp backend.tf.example backend.tf
+#   2. bootstrap/ 실행 후 출력된 값으로 아래를 채우세요:
+#      bucket         = bootstrap output: state_bucket_name
+#      dynamodb_table = bootstrap output: lock_table_name
+#   3. terraform init
+#
+# ⚠️ backend.tf는 AWS 계정 ID가 포함되므로 절대 git 커밋 금지
+# ============================================================
+terraform {
+  backend "s3" {
+    bucket         = "youngbaby-terraform-state-YOUR_ACCOUNT_ID"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "youngbaby-terraform-lock"
+    encrypt        = true
+  }
+}

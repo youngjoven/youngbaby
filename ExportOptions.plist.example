@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store-connect</string>
+    <key>teamID</key>
+    <string>YOUR_TEAM_ID</string>
+    <key>signingStyle</key>
+    <string>manual</string>
+    <key>signingCertificate</key>
+    <string>iPhone Distribution: YOUR_NAME (YOUR_TEAM_ID)</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.youngbaby.app</key>
+        <string>youngbaby</string>
+    </dict>
+    <key>uploadBitcode</key>
+    <false/>
+    <key>uploadSymbols</key>
+    <true/>
+</dict>
+</plist>
+<!--
+사용법:
+  1. 이 파일을 ExportOptions.plist로 복사: cp ExportOptions.plist.example ExportOptions.plist
+  2. YOUR_TEAM_ID → Apple Developer Team ID로 교체
+  3. YOUR_NAME → 개발자 이름으로 교체
+⚠️ ExportOptions.plist는 Team ID, 개발자 실명이 포함되므로 절대 git 커밋 금지
+-->

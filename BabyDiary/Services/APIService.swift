@@ -107,6 +107,18 @@ actor APIService {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         _ = try? await URLSession.shared.data(for: request)
     }
+
+    // MARK: - Account
+
+    func deleteUserAccount() async throws {
+        guard let request = authorizedRequest(path: "/account", method: "DELETE") else { return }
+        let (data, response) = try await URLSession.shared.data(for: request)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            let json = (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
+            let message = (json["message"] as? String) ?? "계정 삭제에 실패했습니다."
+            throw URLError(.badServerResponse, userInfo: [NSLocalizedDescriptionKey: message])
+        }
+    }
 }
 
 // MARK: - Response Models
