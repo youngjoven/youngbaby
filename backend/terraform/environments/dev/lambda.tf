@@ -66,6 +66,12 @@ data "archive_file" "device" {
   output_path = "${local.lambda_zip_dir}/device.zip"
 }
 
+data "archive_file" "account" {
+  type        = "zip"
+  source_dir  = "${path.module}/../../../lambda/account"
+  output_path = "${local.lambda_zip_dir}/account.zip"
+}
+
 # ============================
 # Lambda: 수유 기록 CRUD
 # ============================
@@ -80,7 +86,7 @@ resource "aws_lambda_function" "feedings" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -108,7 +114,7 @@ resource "aws_lambda_function" "bowels" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -136,7 +142,7 @@ resource "aws_lambda_function" "profile" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -164,7 +170,7 @@ resource "aws_lambda_function" "advisor" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -192,7 +198,7 @@ resource "aws_lambda_function" "insights" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -220,7 +226,7 @@ resource "aws_lambda_function" "alarm_schedule" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -251,7 +257,7 @@ resource "aws_lambda_function" "alarm_delivery" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -281,7 +287,7 @@ resource "aws_lambda_function" "device" {
   role             = aws_iam_role.lambda_exec.arn
 
   vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    subnet_ids         = [aws_subnet.private_a.id]
     security_group_ids = [aws_security_group.lambda.id]
   }
 
@@ -294,5 +300,35 @@ resource "aws_lambda_function" "device" {
 
 resource "aws_cloudwatch_log_group" "device" {
   name              = "/aws/lambda/youngbaby-device-${var.stage}"
+  retention_in_days = 30
+}
+
+# ============================
+# Lambda: 계정 삭제
+# ============================
+resource "aws_lambda_function" "account" {
+  function_name    = "youngbaby-account-${var.stage}"
+  filename         = data.archive_file.account.output_path
+  source_code_hash = data.archive_file.account.output_base64sha256
+  handler          = "app.handler"
+  runtime          = "python3.12"
+  timeout          = 30
+  memory_size      = 256
+  role             = aws_iam_role.lambda_exec.arn
+
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_a.id]
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  environment {
+    variables = merge(local.lambda_env, {
+      USER_POOL_ID = aws_cognito_user_pool.main.id
+    })
+  }
+}
+
+resource "aws_cloudwatch_log_group" "account" {
+  name              = "/aws/lambda/youngbaby-account-${var.stage}"
   retention_in_days = 30
 }

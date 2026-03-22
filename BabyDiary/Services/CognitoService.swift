@@ -38,8 +38,8 @@ enum CognitoService {
         try await request(target: "AWSCognitoIdentityProviderService.ConfirmSignUp", body: body)
     }
 
-    // MARK: - 로그인 → IdToken 반환
-    static func signIn(email: String, password: String) async throws -> String {
+    // MARK: - 로그인 → (IdToken, AccessToken) 반환
+    static func signIn(email: String, password: String) async throws -> (idToken: String, accessToken: String) {
         let body: [String: Any] = [
             "AuthFlow": "USER_PASSWORD_AUTH",
             "ClientId": AppConfig.cognitoClientId,
@@ -48,11 +48,18 @@ enum CognitoService {
         let json = try await request(target: "AWSCognitoIdentityProviderService.InitiateAuth", body: body)
         guard
             let result = json["AuthenticationResult"] as? [String: Any],
-            let idToken = result["IdToken"] as? String
+            let idToken = result["IdToken"] as? String,
+            let accessToken = result["AccessToken"] as? String
         else {
             throw CognitoError.authFailed("로그인에 실패했습니다. 이메일과 비밀번호를 확인하세요.")
         }
-        return idToken
+        return (idToken: idToken, accessToken: accessToken)
+    }
+
+    // MARK: - 계정 삭제 (AccessToken 필요)
+    static func deleteUser(accessToken: String) async throws {
+        let body: [String: Any] = ["AccessToken": accessToken]
+        try await request(target: "AWSCognitoIdentityProviderService.DeleteUser", body: body)
     }
 
     // MARK: - 공통 HTTP 요청

@@ -227,8 +227,8 @@ struct AuthView: View {
             defer { isLoading = false }
             do {
                 if mode == .signIn {
-                    let token = try await CognitoService.signIn(email: email, password: password)
-                    await authManager.login(idToken: token)
+                    let tokens = try await CognitoService.signIn(email: email, password: password)
+                    await authManager.login(idToken: tokens.idToken, accessToken: tokens.accessToken)
                 } else {
                     try await CognitoService.signUp(email: email, password: password)
                     pendingEmail = email
@@ -249,8 +249,8 @@ struct AuthView: View {
             defer { isLoading = false }
             do {
                 try await CognitoService.confirmSignUp(email: pendingEmail, code: confirmCode)
-                let token = try await CognitoService.signIn(email: pendingEmail, password: password)
-                await authManager.login(idToken: token)
+                let tokens = try await CognitoService.signIn(email: pendingEmail, password: password)
+                await authManager.login(idToken: tokens.idToken, accessToken: tokens.accessToken)
             } catch {
                 errorMessage = error.localizedDescription
                 alertMessage = error.localizedDescription

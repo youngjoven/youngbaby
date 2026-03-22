@@ -17,14 +17,22 @@ targets:
       - path: BabyDiary
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.youngbaby.app
-      PRODUCT_NAME: 아기 일기장
+      PRODUCT_NAME: BabyDiary
       SWIFT_VERSION: "6.0"
-      DEVELOPMENT_TEAM: ""
+      DEVELOPMENT_TEAM: CS2LWVP74A
+      MARKETING_VERSION: "1.1"
+      CURRENT_PROJECT_VERSION: "2"
+      CODE_SIGN_STYLE: Manual
+      CODE_SIGN_IDENTITY: "iPhone Distribution"
+      PROVISIONING_PROFILE_SPECIFIER: "youngbaby"
     info:
       path: BabyDiary/Resources/Info.plist
       properties:
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         UILaunchScreen:
           UIColorName: PastelBackground
+        UIRequiresFullScreen: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         NSRemoteNotificationUsageDescription: "수유 알람 수신을 위해 알림 권한이 필요합니다."

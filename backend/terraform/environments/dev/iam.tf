@@ -36,6 +36,7 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         "dynamodb:DeleteItem",
         "dynamodb:Query",
         "dynamodb:Scan",
+        "dynamodb:BatchWriteItem",
       ]
       Resource = [
         aws_dynamodb_table.feedings.arn,
@@ -112,6 +113,20 @@ resource "aws_iam_role_policy" "lambda_sns" {
         ]
       }
     ]
+  })
+}
+
+# Cognito AdminDeleteUser (계정 삭제 Lambda 전용)
+resource "aws_iam_role_policy" "lambda_cognito_delete" {
+  name = "youngbaby-lambda-cognito-delete-${var.stage}"
+  role = aws_iam_role.lambda_exec.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "cognito-idp:AdminDeleteUser"
+      Resource = aws_cognito_user_pool.main.arn
+    }]
   })
 }
 

@@ -95,6 +95,12 @@ resource "aws_api_gateway_resource" "device_token" {
   path_part   = "token"
 }
 
+resource "aws_api_gateway_resource" "account" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_rest_api.main.root_resource_id
+  path_part   = "account"
+}
+
 # ============================
 # 엔드포인트 목록 (locals)
 # for_each로 반복 생성 → 코드 중복 제거
@@ -113,10 +119,11 @@ locals {
     insights_get    = { resource_id = aws_api_gateway_resource.insights.id,       http_method = "GET",    function = aws_lambda_function.insights }
     alarm_post      = { resource_id = aws_api_gateway_resource.alarm_schedule.id,  http_method = "POST",   function = aws_lambda_function.alarm_schedule }
     device_post     = { resource_id = aws_api_gateway_resource.device_token.id,   http_method = "POST",   function = aws_lambda_function.device }
+    account_delete  = { resource_id = aws_api_gateway_resource.account.id,        http_method = "DELETE", function = aws_lambda_function.account }
   }
 }
 
-# Cognito 인증 메서드 (12개 엔드포인트 일괄 생성)
+# Cognito 인증 메서드 (13개 엔드포인트 일괄 생성)
 resource "aws_api_gateway_method" "endpoints" {
   for_each      = local.endpoints
   rest_api_id   = aws_api_gateway_rest_api.main.id
@@ -126,7 +133,7 @@ resource "aws_api_gateway_method" "endpoints" {
   authorizer_id = aws_api_gateway_authorizer.cognito.id
 }
 
-# Lambda Proxy 통합 (12개 일괄 생성)
+# Lambda Proxy 통합 (13개 일괄 생성)
 resource "aws_api_gateway_integration" "endpoints" {
   for_each                = local.endpoints
   rest_api_id             = aws_api_gateway_rest_api.main.id
@@ -198,6 +205,14 @@ resource "aws_lambda_permission" "device" {
   source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "account" {
+  statement_id  = "AllowAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.account.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+}
+
 # ============================
 # 배포(Deployment) + 스테이지(Stage)
 # triggers: 엔드포인트 변경 감지 → 자동 재배포
@@ -216,6 +231,7 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_resource.insights.id,
       aws_api_gateway_resource.alarm_schedule.id,
       aws_api_gateway_resource.device_token.id,
+      aws_api_gateway_resource.account.id,
       aws_api_gateway_method.endpoints,
       aws_api_gateway_integration.endpoints,
     ]))

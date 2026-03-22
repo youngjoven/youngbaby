@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>NSRemoteNotificationUsageDescription</key>
 	<string>수유 알람 수신을 위해 알림 권한이 필요합니다.</string>
 	<key>UIBackgroundModes</key>
@@ -29,6 +29,8 @@
 		<key>UIColorName</key>
 		<string>PastelBackground</string>
 	</dict>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

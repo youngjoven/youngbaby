@@ -4,6 +4,7 @@
 
 # 설계 문서 및 프레젠테이션 (내부 자료, 공개 금지)
 *.md
+!README.md
 *.pptx
 *.ppt
 *.key
@@ -48,6 +49,10 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+backend.tf
+
+# Apple 배포 설정 (Team ID, 개발자 실명 포함)
+ExportOptions.plist
 
 # Apple 인증서 및 프로비저닝 프로파일
 *.p12
