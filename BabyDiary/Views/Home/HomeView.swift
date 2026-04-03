@@ -2,17 +2,32 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    private let userId: String
     @Binding var selectedTab: Int
 
     @Query private var profiles: [UserProfile]
-    @Query(sort: \FeedingRecord.feedingTime, order: .reverse) private var feedings: [FeedingRecord]
-    @Query(sort: \BowelRecord.bowelTime, order: .reverse) private var bowels: [BowelRecord]
+    @Query private var feedings: [FeedingRecord]
+    @Query private var bowels: [BowelRecord]
     @Environment(\.modelContext) private var modelContext
 
     @State private var showFeedingInput = false
     @State private var showBowelInput = false
     @State private var advisorResponse: AdvisorResponse?
     @State private var showAdvisorCard = false
+
+    init(userId: String, selectedTab: Binding<Int>) {
+        self.userId = userId
+        _selectedTab = selectedTab
+        _profiles = Query(filter: #Predicate<UserProfile> { $0.cognitoUserId == userId })
+        _feedings = Query(
+            filter: #Predicate<FeedingRecord> { $0.userId == userId },
+            sort: \FeedingRecord.feedingTime, order: .reverse
+        )
+        _bowels = Query(
+            filter: #Predicate<BowelRecord> { $0.userId == userId },
+            sort: \BowelRecord.bowelTime, order: .reverse
+        )
+    }
 
     private var profile: UserProfile? { profiles.first }
 
@@ -23,16 +38,10 @@ struct HomeView: View {
 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // 아이 정보 헤더
                         profileHeaderView
-
-                        // 오늘 요약 카드
                         todaySummaryCard
-
-                        // 수유·배변 기록 버튼
                         recordButtonsView
 
-                        // 어드바이저 추천 카드 (수유 후 자동 표시, 탭하면 어드바이저 화면으로 이동)
                         if showAdvisorCard, let advice = advisorResponse {
                             Button { selectedTab = 2 } label: {
                                 AdvisorCardView(response: advice)
@@ -53,24 +62,19 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: 6) {
-                        Text("🍼")
-                            .font(.subheadline)
+                        Text("🍼").font(.subheadline)
                         Text("아기 일기장")
                             .font(.headline.bold())
-                            .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                            .foregroundColor(.appPink)
                     }
                 }
             }
             .onAppear { syncProfileIfNeeded() }
             .sheet(isPresented: $showFeedingInput) {
-                FeedingInputModal { amountMl in
-                    saveFeedingRecord(amountMl: amountMl)
-                }
+                FeedingInputModal { amountMl in saveFeedingRecord(amountMl: amountMl) }
             }
             .sheet(isPresented: $showBowelInput) {
-                BowelInputModal { time, condition in
-                    saveBowelRecord(time: time, condition: condition)
-                }
+                BowelInputModal { time, condition in saveBowelRecord(time: time, condition: condition) }
             }
         }
     }
@@ -81,14 +85,12 @@ struct HomeView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text("안녕하세요, \(profile?.motherName ?? "")님 👋")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.subheadline).foregroundColor(.secondary)
                 Text("\(profile?.babyName ?? "아기") · \(profile?.ageInMonths ?? 0)개월")
                     .font(.title2.bold())
             }
             Spacer()
-            Text("🍼")
-                .font(.system(size: 40))
+            Text("🍼").font(.system(size: 40))
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 20).fill(Color.white))
@@ -97,29 +99,18 @@ struct HomeView: View {
 
     private var todaySummaryCard: some View {
         VStack(spacing: 12) {
-            Text("오늘 요약")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("오늘 요약").font(.headline).frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 12) {
-                SummaryTile(
-                    emoji: "🍼",
-                    title: "수유",
-                    value: "\(FeedingService.todayCount(records: feedings))회",
-                    subtitle: "총 \(FeedingService.dailyTotal(records: feedings))ml"
-                )
-                SummaryTile(
-                    emoji: "💩",
-                    title: "배변",
-                    value: "\(todayBowelCount)회",
-                    subtitle: lastBowelSummary
-                )
-                SummaryTile(
-                    emoji: "⏰",
-                    title: "다음 수유",
-                    value: nextFeedingTimeText,
-                    subtitle: "권장 시각"
-                )
+                SummaryTile(emoji: "🍼", title: "수유",
+                            value: "\(FeedingService.todayCount(records: feedings))회",
+                            subtitle: "총 \(FeedingService.dailyTotal(records: feedings))ml")
+                SummaryTile(emoji: "💩", title: "배변",
+                            value: "\(todayBowelCount)회",
+                            subtitle: lastBowelSummary)
+                SummaryTile(emoji: "⏰", title: "다음 수유",
+                            value: nextFeedingTimeText,
+                            subtitle: "권장 시각")
             }
         }
         .padding()
@@ -131,20 +122,17 @@ struct HomeView: View {
         HStack(spacing: 12) {
             Button(action: { showFeedingInput = true }) {
                 Label("수유 기록하기", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(red: 0.85, green: 0.25, blue: 0.45)))
+                    .font(.headline).foregroundColor(.white)
+                    .frame(maxWidth: .infinity).padding()
+                    .background(RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.appPink))
             }
-
             Button(action: { showBowelInput = true }) {
                 Label("배변 기록하기", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(red: 0.1, green: 0.6, blue: 0.45)))
+                    .font(.headline).foregroundColor(.white)
+                    .frame(maxWidth: .infinity).padding()
+                    .background(RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.appGreen))
             }
         }
     }
@@ -185,10 +173,9 @@ struct HomeView: View {
 
     private func saveFeedingRecord(amountMl: Int) {
         guard amountMl > 0 else { return }
-        let record = FeedingRecord(amountMl: amountMl)
+        let record = FeedingRecord(userId: userId, amountMl: amountMl)
         modelContext.insert(record)
 
-        // 알람 예약 + 어드바이저 추천 요청
         if let profile = profile {
             let nextTime = AgeCalculatorService.nextFeedingTime(
                 lastFeedingTime: record.feedingTime,
@@ -204,17 +191,15 @@ struct HomeView: View {
                     amountMl: amountMl
                 )
                 if let advice = try? await APIService.shared.fetchAdvice() {
-                    await MainActor.run {
-                        advisorResponse = advice
-                        withAnimation { showAdvisorCard = true }
-                    }
+                    advisorResponse = advice
+                    withAnimation { showAdvisorCard = true }
                 }
             }
         }
     }
 
     private func saveBowelRecord(time: Date, condition: BowelCondition) {
-        let record = BowelRecord(bowelTime: time, condition: condition)
+        let record = BowelRecord(userId: userId, bowelTime: time, condition: condition)
         modelContext.insert(record)
         Task {
             try? await APIService.shared.uploadBowel(

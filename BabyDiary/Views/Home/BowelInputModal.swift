@@ -31,7 +31,7 @@ struct BowelInputModal: View {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("배변 상태")
                                     .font(.subheadline.bold())
-                                    .foregroundColor(Color(red: 0.1, green: 0.6, blue: 0.45))
+                                    .foregroundColor(Color.appGreen)
 
                                 ForEach(BowelCondition.allCases, id: \.self) { condition in
                                     Button(action: { selectedCondition = condition }) {
@@ -49,20 +49,20 @@ struct BowelInputModal: View {
                                             Spacer()
                                             if selectedCondition == condition {
                                                 Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(Color(red: 0.1, green: 0.6, blue: 0.45))
+                                                    .foregroundColor(Color.appGreen)
                                             }
                                         }
                                         .padding()
                                         .background(
                                             RoundedRectangle(cornerRadius: 16)
                                                 .fill(selectedCondition == condition
-                                                      ? Color(red: 0.1, green: 0.6, blue: 0.45).opacity(0.12)
+                                                      ? Color.appGreen.opacity(0.12)
                                                       : Color.white)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 16)
                                                         .stroke(
                                                             selectedCondition == condition
-                                                            ? Color(red: 0.1, green: 0.6, blue: 0.45)
+                                                            ? Color.appGreen
                                                             : Color.clear,
                                                             lineWidth: 2
                                                         )
@@ -86,7 +86,7 @@ struct BowelInputModal: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(red: 0.1, green: 0.6, blue: 0.45))
+                                    .fill(Color.appGreen)
                             )
                     }
                     .padding(.horizontal)
@@ -98,7 +98,7 @@ struct BowelInputModal: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
-                        .foregroundColor(Color(red: 0.1, green: 0.6, blue: 0.45))
+                        .foregroundColor(Color.appGreen)
                 }
             }
         }

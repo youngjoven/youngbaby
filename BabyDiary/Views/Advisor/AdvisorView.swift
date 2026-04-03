@@ -36,7 +36,7 @@ struct AdvisorView: View {
                             .font(.subheadline)
                         Text("어드바이저")
                             .font(.headline.bold())
-                            .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8))
+                            .foregroundColor(Color.appPurple)
                     }
                 }
             }
@@ -53,19 +53,19 @@ struct AdvisorView: View {
                 emoji: "⏰",
                 title: "다음 수유 시간",
                 content: response.nextFeedingAdvice,
-                color: Color(red: 0.85, green: 0.25, blue: 0.45)
+                color: .appPink
             )
             AdvisorItemCard(
                 emoji: "🍼",
                 title: "분유량 조언",
                 content: response.amountAdvice,
-                color: Color(red: 0.1, green: 0.6, blue: 0.45)
+                color: .appGreen
             )
             AdvisorItemCard(
                 emoji: "💬",
                 title: "수유·배변 종합 의견",
                 content: response.overallOpinion,
-                color: Color(red: 0.5, green: 0.2, blue: 0.8)
+                color: .appPurple
             )
 
             // 면책 문구
@@ -82,7 +82,7 @@ struct AdvisorView: View {
         VStack(spacing: 12) {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
-                .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8).opacity(0.5))
+                .foregroundColor(Color.appPurple.opacity(0.5))
             Text("수유 기록이 쌓이면\nAI 추천이 표시됩니다")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -106,7 +106,7 @@ struct AdvisorView: View {
                 Task { await loadAdvice() }
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color(red: 0.5, green: 0.2, blue: 0.8))
+            .tint(Color.appPurple)
         }
         .padding(40)
     }

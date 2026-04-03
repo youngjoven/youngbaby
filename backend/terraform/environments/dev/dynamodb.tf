@@ -122,3 +122,31 @@ resource "aws_dynamodb_table" "device_tokens" {
 
   tags = { Name = "youngbaby-device-tokens-${var.stage}" }
 }
+
+# ============================
+# LLM 일일 호출 할당량 테이블
+# userId + date(YYYY-MM-DD UTC) 기준 원자적 카운터 + 마지막 응답 캐시
+# TTL 2일 → 자동 만료 (복구 불필요 → PITR/prevent_destroy 미적용)
+# ============================
+resource "aws_dynamodb_table" "llm_quota" {
+  name         = "youngbaby-llm-quota-${var.stage}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "userId"
+  range_key    = "date"
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+  attribute {
+    name = "date"
+    type = "S"
+  }
+
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
+
+  tags = { Name = "youngbaby-llm-quota-${var.stage}" }
+}

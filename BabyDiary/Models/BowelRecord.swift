@@ -33,6 +33,7 @@ enum BowelCondition: String, Codable, CaseIterable {
 
 @Model
 final class BowelRecord {
+    var userId: String = ""
     var bowelTime: Date
     var condition: String
     var syncedAt: Date?
@@ -42,7 +43,8 @@ final class BowelRecord {
         set { condition = newValue.rawValue }
     }
 
-    init(bowelTime: Date, condition: BowelCondition) {
+    init(userId: String, bowelTime: Date, condition: BowelCondition) {
+        self.userId = userId
         self.bowelTime = bowelTime
         self.condition = condition.rawValue
     }

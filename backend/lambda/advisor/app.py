@@ -3,6 +3,7 @@ AI 어드바이저 Lambda 핸들러
 POST /advisor/advice - 최근 7일 수유·배변 기록 분석 후 Bedrock Claude 추천 반환
 
 [보안] Bedrock 호출 실패 시 기본 응답(월령 기반 규칙 추천)으로 대체
+[할당량] 유저당 하루 최대 5회 Bedrock 호출. 초과 시 마지막 캐시 결과 조용히 반환
 """
 import json
 import os
@@ -16,9 +17,11 @@ dynamodb = boto3.resource("dynamodb")
 feedings_table = dynamodb.Table(os.environ["FEEDINGS_TABLE"])
 bowels_table = dynamodb.Table(os.environ["BOWELS_TABLE"])
 profiles_table = dynamodb.Table(os.environ["PROFILES_TABLE"])
+quota_table = dynamodb.Table(os.environ["LLM_QUOTA_TABLE"])
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-MODEL_ID = "anthropic.claude-sonnet-4-20250514-v1:0"
+MODEL_ID = "us.anthropic.claude-sonnet-4-20250514-v1:0"
+ADVISOR_DAILY_LIMIT = 5
 
 # 월령별 권장 기준 (대한소아과학회 · WHO 가이드라인 참고)
 _AGE_RECS = {
@@ -112,6 +115,15 @@ def handler(event, context):
     if not feedings:
         return _ok(_default_advice(age_months, rec))
 
+    # 일일 할당량 체크 → 초과 시 캐시된 조언 조용히 반환
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    quota_item = quota_table.get_item(Key={"userId": uid, "date": today}).get("Item")
+    if quota_item and int(quota_item.get("advisorCount", 0)) >= ADVISOR_DAILY_LIMIT:
+        cached = quota_item.get("advisorCache")
+        if cached:
+            return _ok(json.loads(cached))
+        return _ok(_default_advice(age_months, rec))
+
     # Bedrock 프롬프트 구성
     feedings_text = "\n".join(
         f"- {f['feedingTime']}: {f['amountMl']}ml" for f in feedings[-20:]
@@ -164,7 +176,28 @@ def handler(event, context):
         for key in default:
             advice.setdefault(key, default[key])
 
+        # 할당량 카운터 증가 + 응답 캐시 저장 (실패해도 응답에 영향 없음)
+        try:
+            ttl_ts = int((datetime.now(timezone.utc) + timedelta(days=2)).timestamp())
+            quota_table.update_item(
+                Key={"userId": uid, "date": today},
+                UpdateExpression=(
+                    "SET advisorCount = if_not_exists(advisorCount, :zero) + :one,"
+                    " advisorCache = :cache, #ttl = :ttl"
+                ),
+                ExpressionAttributeValues={
+                    ":zero": 0,
+                    ":one": 1,
+                    ":cache": json.dumps(advice, ensure_ascii=False),
+                    ":ttl": ttl_ts,
+                },
+                ExpressionAttributeNames={"#ttl": "ttl"},
+            )
+        except Exception:
+            pass
+
         return _ok(advice)
 
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR] Bedrock call failed: {type(e).__name__}: {e}")
         return _ok(_default_advice(age_months, rec))

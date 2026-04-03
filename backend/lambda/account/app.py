@@ -74,3 +74,5 @@ def _delete_user_data(uid):
     _delete_items_with_sort_key(os.environ["BOWELS_TABLE"], uid, "bowelTime")
     # insights (range key: generatedAt)
     _delete_items_with_sort_key(os.environ["INSIGHTS_TABLE"], uid, "generatedAt")
+    # llm_quota (range key: date)
+    _delete_items_with_sort_key(os.environ["LLM_QUOTA_TABLE"], uid, "date")

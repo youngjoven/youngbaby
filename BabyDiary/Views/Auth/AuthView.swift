@@ -47,7 +47,7 @@ struct AuthView: View {
                 .padding(.top, 20)
             Text("아기 일기장")
                 .font(.title.bold())
-                .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                .foregroundColor(Color.appPink)
             Text("가족과 함께 기록하는 아이 성장 일기")
                 .font(.subheadline)
                 .foregroundColor(Color(white: 0.45))
@@ -104,7 +104,7 @@ struct AuthView: View {
             VStack(spacing: 8) {
                 Image(systemName: "envelope.badge")
                     .font(.system(size: 44))
-                    .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                    .foregroundColor(Color.appPink)
                 Text("이메일 인증")
                     .font(.title2.bold())
                 Text("\(pendingEmail)으로\n발송된 인증 코드 6자리를 입력하세요.")
@@ -147,7 +147,7 @@ struct AuthView: View {
                 .foregroundColor(selected ? .white : Color(white: 0.5))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(selected ? Color(red: 0.85, green: 0.25, blue: 0.45) : Color.clear)
+                .background(selected ? Color.appPink : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -159,7 +159,7 @@ struct AuthView: View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: systemImage)
                 .font(.caption.bold())
-                .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                .foregroundColor(Color.appPink)
             TextField("", text: text)
                 .textFieldStyle(.plain)
                 .keyboardType(keyboard)
@@ -177,7 +177,7 @@ struct AuthView: View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: systemImage)
                 .font(.caption.bold())
-                .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                .foregroundColor(Color.appPink)
             SecureField("", text: text)
                 .textFieldStyle(.plain)
             Divider()
@@ -202,7 +202,7 @@ struct AuthView: View {
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(enabled && !isLoading
-                          ? Color(red: 0.85, green: 0.25, blue: 0.45)
+                          ? Color.appPink
                           : Color.gray.opacity(0.4))
             )
         }

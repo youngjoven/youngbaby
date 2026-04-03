@@ -9,14 +9,24 @@ actor APIService {
 
     private var idToken: String = ""
 
+    private let isoFormatter = ISO8601DateFormatter()
+
+    private let dateOnlyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     // MARK: - Auth
 
     func setIdToken(_ token: String) {
         self.idToken = token
     }
 
-    private func authorizedRequest(path: String, method: String = "GET") -> URLRequest? {
-        guard let url = URL(string: baseURL + path) else { return nil }
+    private func authorizedRequest(path: String, method: String = "GET", queryItems: [URLQueryItem]? = nil) -> URLRequest? {
+        guard var components = URLComponents(string: baseURL + path) else { return nil }
+        components.queryItems = queryItems
+        guard let url = components.url else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -29,20 +39,27 @@ actor APIService {
     func uploadFeeding(feedingTime: Date, amountMl: Int) async throws {
         guard var request = authorizedRequest(path: "/feedings", method: "POST") else { return }
         let body: [String: Any] = [
-            "feedingTime": ISO8601DateFormatter().string(from: feedingTime),
+            "feedingTime": isoFormatter.string(from: feedingTime),
             "amountMl": amountMl
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         _ = try await URLSession.shared.data(for: request)
     }
 
-    func fetchFeedings(from: Date, to: Date) async throws -> [[String: Any]] {
-        guard var request = authorizedRequest(path: "/feedings") else { return [] }
-        let formatter = ISO8601DateFormatter()
-        let urlString = baseURL + "/feedings?from=\(formatter.string(from: from))&to=\(formatter.string(from: to))"
-        request.url = URL(string: urlString)
+    func fetchFeedings(from: Date, to: Date) async throws -> [ServerFeeding] {
+        let query = [
+            URLQueryItem(name: "from", value: isoFormatter.string(from: from)),
+            URLQueryItem(name: "to", value: isoFormatter.string(from: to))
+        ]
+        guard let request = authorizedRequest(path: "/feedings", queryItems: query) else { return [] }
         let (data, _) = try await URLSession.shared.data(for: request)
-        return (try JSONSerialization.jsonObject(with: data) as? [[String: Any]]) ?? []
+        return (try? JSONDecoder().decode([ServerFeeding].self, from: data)) ?? []
+    }
+
+    func deleteFeeding(feedingTime: Date) async throws {
+        let id = isoFormatter.string(from: feedingTime)
+        guard let request = authorizedRequest(path: "/feedings/\(id)", method: "DELETE") else { return }
+        _ = try await URLSession.shared.data(for: request)
     }
 
     // MARK: - Bowel Records
@@ -50,7 +67,7 @@ actor APIService {
     func uploadBowel(bowelTime: Date, condition: String) async throws {
         guard var request = authorizedRequest(path: "/bowels", method: "POST") else { return }
         let body: [String: Any] = [
-            "bowelTime": ISO8601DateFormatter().string(from: bowelTime),
+            "bowelTime": isoFormatter.string(from: bowelTime),
             "condition": condition
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -61,14 +78,35 @@ actor APIService {
 
     func uploadProfile(babyName: String, babyBirthDate: Date, motherName: String) async throws {
         guard var request = authorizedRequest(path: "/profile", method: "PUT") else { return }
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
         let body: [String: Any] = [
             "babyName": babyName,
-            "babyBirthDate": formatter.string(from: babyBirthDate),
+            "babyBirthDate": dateOnlyFormatter.string(from: babyBirthDate),
             "motherName": motherName
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        _ = try await URLSession.shared.data(for: request)
+    }
+
+    func fetchProfile() async throws -> ServerProfile? {
+        guard let request = authorizedRequest(path: "/profile") else { return nil }
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else { return nil }
+        return try? JSONDecoder().decode(ServerProfile.self, from: data)
+    }
+
+    func fetchBowels(from: Date, to: Date) async throws -> [ServerBowel] {
+        let query = [
+            URLQueryItem(name: "from", value: isoFormatter.string(from: from)),
+            URLQueryItem(name: "to", value: isoFormatter.string(from: to))
+        ]
+        guard let request = authorizedRequest(path: "/bowels", queryItems: query) else { return [] }
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return (try? JSONDecoder().decode([ServerBowel].self, from: data)) ?? []
+    }
+
+    func deleteBowel(bowelTime: Date) async throws {
+        let id = isoFormatter.string(from: bowelTime)
+        guard let request = authorizedRequest(path: "/bowels/\(id)", method: "DELETE") else { return }
         _ = try await URLSession.shared.data(for: request)
     }
 
@@ -94,7 +132,7 @@ actor APIService {
     func scheduleAlarm(nextFeedingTime: Date, userId: String) async {
         guard var request = authorizedRequest(path: "/alarm/schedule", method: "POST") else { return }
         let body: [String: Any] = [
-            "nextFeedingTime": ISO8601DateFormatter().string(from: nextFeedingTime),
+            "nextFeedingTime": isoFormatter.string(from: nextFeedingTime),
             "userId": userId
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
@@ -123,14 +161,30 @@ actor APIService {
 
 // MARK: - Response Models
 
-struct AdvisorResponse: Codable {
+struct ServerProfile: Codable, Sendable {
+    let babyName: String
+    let babyBirthDate: String
+    let motherName: String?
+}
+
+struct ServerFeeding: Codable, Sendable {
+    let feedingTime: String
+    let amountMl: Int
+}
+
+struct ServerBowel: Codable, Sendable {
+    let bowelTime: String
+    let condition: String
+}
+
+struct AdvisorResponse: Codable, Sendable {
     let nextFeedingAdvice: String
     let amountAdvice: String
     let overallOpinion: String
     let disclaimer: String
 }
 
-struct InsightItem: Codable, Identifiable {
+struct InsightItem: Codable, Identifiable, Sendable {
     let id: String
     let insightType: String
     let content: String

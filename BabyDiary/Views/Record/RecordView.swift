@@ -2,11 +2,22 @@ import SwiftUI
 import SwiftData
 
 struct RecordView: View {
-    @Query(sort: \FeedingRecord.feedingTime, order: .reverse) private var feedings: [FeedingRecord]
-    @Query(sort: \BowelRecord.bowelTime, order: .reverse) private var bowels: [BowelRecord]
+    @Query private var feedings: [FeedingRecord]
+    @Query private var bowels: [BowelRecord]
     @Environment(\.modelContext) private var modelContext
 
     @State private var selectedTab = 0
+
+    init(userId: String) {
+        _feedings = Query(
+            filter: #Predicate<FeedingRecord> { $0.userId == userId },
+            sort: \FeedingRecord.feedingTime, order: .reverse
+        )
+        _bowels = Query(
+            filter: #Predicate<BowelRecord> { $0.userId == userId },
+            sort: \BowelRecord.bowelTime, order: .reverse
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -33,13 +44,17 @@ struct RecordView: View {
                         if selectedTab == 0 {
                             ForEach(feedings) { record in
                                 FeedingRowView(record: record) {
+                                    let time = record.feedingTime
                                     modelContext.delete(record)
+                                    Task { try? await APIService.shared.deleteFeeding(feedingTime: time) }
                                 }
                             }
                         } else {
                             ForEach(bowels) { record in
                                 BowelRowView(record: record) {
+                                    let time = record.bowelTime
                                     modelContext.delete(record)
+                                    Task { try? await APIService.shared.deleteBowel(bowelTime: time) }
                                 }
                             }
                         }
@@ -60,7 +75,7 @@ struct RecordView: View {
                             .font(.subheadline)
                         Text("기록")
                             .font(.headline.bold())
-                            .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                            .foregroundColor(Color.appPink)
                     }
                 }
             }
@@ -78,13 +93,13 @@ struct RecordView: View {
             HStack(spacing: 12) {
                 StatCard(title: "평균 수유 간격",
                          value: averageIntervalText,
-                         color: Color(red: 0.85, green: 0.25, blue: 0.45))
+                         color: .appPink)
                 StatCard(title: "1회 평균 분유량",
                          value: averageAmountText,
-                         color: Color(red: 0.1, green: 0.6, blue: 0.45))
+                         color: .appGreen)
                 StatCard(title: "오늘 총 분유량",
                          value: "\(FeedingService.dailyTotal(records: feedings))ml",
-                         color: Color(red: 0.5, green: 0.2, blue: 0.8))
+                         color: .appPurple)
             }
         }
         .padding()
@@ -123,7 +138,7 @@ struct FeedingRowView: View {
                 Text("🍼")
                 Text("\(record.amountMl)ml")
                     .font(.headline)
-                    .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                    .foregroundColor(Color.appPink)
             }
             Button(action: onDelete) {
                 Image(systemName: "trash")
@@ -157,7 +172,7 @@ struct BowelRowView: View {
                 Text(record.bowelCondition.emoji)
                 Text(record.bowelCondition.displayName)
                     .font(.headline)
-                    .foregroundColor(Color(red: 0.1, green: 0.6, blue: 0.45))
+                    .foregroundColor(Color.appGreen)
             }
             Button(action: onDelete) {
                 Image(systemName: "trash")

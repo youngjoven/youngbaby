@@ -33,7 +33,7 @@ struct FeedingInputModal: View {
                                 HStack(alignment: .lastTextBaseline, spacing: 6) {
                                     Text("\(Int(amount))")
                                         .font(.system(size: 80, weight: .bold, design: .rounded))
-                                        .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                                        .foregroundColor(Color.appPink)
                                     Text("ml")
                                         .font(.title)
                                         .foregroundColor(Color(white: 0.4))
@@ -43,7 +43,7 @@ struct FeedingInputModal: View {
                             // 슬라이더
                             VStack(spacing: 14) {
                                 Slider(value: $amount, in: 20...300, step: 10)
-                                    .tint(Color(red: 0.85, green: 0.25, blue: 0.45))
+                                    .tint(Color.appPink)
 
                                 HStack {
                                     Text("20ml")
@@ -68,7 +68,7 @@ struct FeedingInputModal: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "info.circle")
                                     .font(.caption)
-                                    .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                                    .foregroundColor(Color.appPink)
                                 Text("신생아 60~90ml · 2개월 120ml · 4개월+ 150~200ml")
                                     .font(.caption)
                                     .foregroundColor(Color(white: 0.45))
@@ -87,7 +87,7 @@ struct FeedingInputModal: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(red: 0.85, green: 0.25, blue: 0.45))
+                                    .fill(Color.appPink)
                             )
                     }
                     .padding(.horizontal)
@@ -99,7 +99,7 @@ struct FeedingInputModal: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("취소") { dismiss() }
-                        .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                        .foregroundColor(Color.appPink)
                 }
             }
         }

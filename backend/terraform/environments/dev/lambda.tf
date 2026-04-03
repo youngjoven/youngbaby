@@ -8,6 +8,7 @@ locals {
     PROFILES_TABLE      = aws_dynamodb_table.profiles.name
     INSIGHTS_TABLE      = aws_dynamodb_table.insights.name
     DEVICE_TOKENS_TABLE = aws_dynamodb_table.device_tokens.name
+    LLM_QUOTA_TABLE     = aws_dynamodb_table.llm_quota.name
     BEDROCK_REGION      = var.aws_region
   }
 

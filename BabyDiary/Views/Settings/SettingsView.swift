@@ -9,18 +9,25 @@ struct SettingsView: View {
     @Query private var feedings: [FeedingRecord]
     @Query private var bowels: [BowelRecord]
 
+    init(userId: String) {
+        _profiles = Query(filter: #Predicate<UserProfile> { $0.cognitoUserId == userId })
+        _feedings = Query(filter: #Predicate<FeedingRecord> { $0.userId == userId })
+        _bowels   = Query(filter: #Predicate<BowelRecord>   { $0.userId == userId })
+    }
+
     @State private var showDeleteConfirmation = false
     @State private var isDeleting = false
     @State private var showError = false
     @State private var errorMessage = ""
 
-    private let pink = Color(red: 0.85, green: 0.25, blue: 0.45)
+    private let pink = Color.appPink
 
     var body: some View {
         NavigationStack {
             List {
                 Section("계정") {
                     Button {
+                        clearLocalData()
                         authManager.logout()
                     } label: {
                         Label("로그아웃", systemImage: "arrow.right.square")
@@ -70,17 +77,18 @@ struct SettingsView: View {
         }
     }
 
+    private func clearLocalData() {
+        for profile in profiles { modelContext.delete(profile) }
+        for feeding in feedings { modelContext.delete(feeding) }
+        for bowel in bowels { modelContext.delete(bowel) }
+    }
+
     private func deleteAccount() async {
         isDeleting = true
         do {
-            // 1. 서버 DynamoDB 데이터 삭제
             try await APIService.shared.deleteUserAccount()
-            // 2. Cognito 계정 삭제
             try await CognitoService.deleteUser(accessToken: authManager.accessToken)
-            // 3. 로컬 SwiftData 삭제
-            for profile in profiles { modelContext.delete(profile) }
-            for feeding in feedings { modelContext.delete(feeding) }
-            for bowel in bowels { modelContext.delete(bowel) }
+            clearLocalData()
             authManager.logout()
         } catch {
             isDeleting = false

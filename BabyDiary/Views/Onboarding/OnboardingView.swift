@@ -2,13 +2,13 @@ import SwiftUI
 import SwiftData
 
 struct OnboardingView: View {
+    let userId: String
+
     @Environment(\.modelContext) private var modelContext
 
     @State private var babyName = ""
     @State private var babyBirthDate = Date()
     @State private var motherName = ""
-    @State private var currentStep = 0
-
     var body: some View {
         ZStack {
             Color("PastelBackground").ignoresSafeArea()
@@ -88,10 +88,10 @@ struct OnboardingView: View {
     private func saveProfile() {
         let name = babyName.trimmingCharacters(in: .whitespaces)
         let mother = motherName.trimmingCharacters(in: .whitespaces)
-        let profile = UserProfile(babyName: name, babyBirthDate: babyBirthDate, motherName: mother)
+        let profile = UserProfile(babyName: name, babyBirthDate: babyBirthDate, motherName: mother, cognitoUserId: userId)
         modelContext.insert(profile)
         Task {
-            await AlarmService.requestPermission()
+            _ = await AlarmService.requestPermission()
             try? await APIService.shared.uploadProfile(
                 babyName: name,
                 babyBirthDate: babyBirthDate,
@@ -112,7 +112,7 @@ struct InputCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: systemImage)
                 .font(.caption.bold())
-                .foregroundColor(Color(red: 0.85, green: 0.25, blue: 0.45))
+                .foregroundColor(Color.appPink)
             content
                 .padding(.vertical, 2)
             Divider()

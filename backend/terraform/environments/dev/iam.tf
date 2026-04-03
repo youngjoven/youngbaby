@@ -44,22 +44,36 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
         aws_dynamodb_table.profiles.arn,
         aws_dynamodb_table.insights.arn,
         aws_dynamodb_table.device_tokens.arn,
+        aws_dynamodb_table.llm_quota.arn,
       ]
     }]
   })
 }
 
-# Bedrock Claude 3.5 Sonnet 호출 (동일 리전)
+# Bedrock Claude Sonnet 4 호출 (Cross-region Inference Profile)
 resource "aws_iam_role_policy" "lambda_bedrock" {
   name = "youngbaby-lambda-bedrock-${var.stage}"
   role = aws_iam_role.lambda_exec.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = "bedrock:InvokeModel"
-      Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0"
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = "bedrock:InvokeModel"
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0",
+          "arn:aws:bedrock:*:${data.aws_caller_identity.current.account_id}:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0",
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "aws-marketplace:ViewSubscriptions",
+          "aws-marketplace:Subscribe",
+        ]
+        Resource = "*"
+      }
+    ]
   })
 }
 

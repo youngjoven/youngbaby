@@ -42,7 +42,7 @@ struct InsightsView: View {
                             .font(.subheadline)
                         Text("인사이트")
                             .font(.headline.bold())
-                            .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8))
+                            .foregroundColor(Color.appPurple)
                     }
                 }
             }
@@ -55,7 +55,7 @@ struct InsightsView: View {
         VStack(spacing: 12) {
             Image(systemName: "chart.bar.fill")
                 .font(.system(size: 48))
-                .foregroundColor(Color(red: 0.5, green: 0.2, blue: 0.8).opacity(0.4))
+                .foregroundColor(Color.appPurple.opacity(0.4))
             Text("3일 이상 기록이 쌓이면\n주간 인사이트가 표시됩니다")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -89,10 +89,10 @@ struct InsightCard: View {
 
     private var cardColor: Color {
         switch item.insightType {
-        case "amount_change":    return Color(red: 0.85, green: 0.25, blue: 0.45)
-        case "interval_change":  return Color(red: 0.1, green: 0.6, blue: 0.45)
+        case "amount_change":    return Color.appPink
+        case "interval_change":  return Color.appGreen
         case "bowel_pattern":    return Color.orange
-        case "age_comparison":   return Color(red: 0.5, green: 0.2, blue: 0.8)
+        case "age_comparison":   return Color.appPurple
         default:                 return Color.blue
         }
     }

@@ -3,7 +3,7 @@
 GET /insights - 주간 인사이트 목록 조회
 
 동작:
-1. 최근 7일 이내 생성된 인사이트가 있으면 그대로 반환
+1. 최근 3일 이내 생성된 인사이트가 있으면 그대로 반환 (Bedrock 호출 생략)
 2. 없으면 최근 4주 데이터를 Bedrock으로 분석 → 인사이트 생성 → DynamoDB 저장 후 반환
 3. 최소 3일 기록이 없으면 빈 배열 반환
 """
@@ -23,7 +23,7 @@ profiles_table = dynamodb.Table(os.environ["PROFILES_TABLE"])
 insights_table = dynamodb.Table(os.environ["INSIGHTS_TABLE"])
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-MODEL_ID = "anthropic.claude-sonnet-4-20250514-v1:0"
+MODEL_ID = "us.anthropic.claude-sonnet-4-20250514-v1:0"
 
 VALID_INSIGHT_TYPES = {
     "amount_change",
@@ -59,11 +59,11 @@ def _user_id(event):
 def handler(event, context):
     uid = _user_id(event)
 
-    # 최근 7일 이내 인사이트가 있으면 기존 것 반환
-    seven_days_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    # 최근 3일 이내 인사이트가 있으면 기존 것 반환 (Bedrock 호출 생략)
+    three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).isoformat()
     existing = insights_table.query(
         KeyConditionExpression=Key("userId").eq(uid)
-        & Key("generatedAt").gte(seven_days_ago),
+        & Key("generatedAt").gte(three_days_ago),
         ScanIndexForward=False,
         Limit=10,
     ).get("Items", [])

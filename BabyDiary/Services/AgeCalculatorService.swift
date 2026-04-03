@@ -30,12 +30,6 @@ struct AgeRecommendation {
 
 struct AgeCalculatorService {
 
-    /// 생년월일로부터 현재 월령(개월 수) 계산
-    static func ageInMonths(from birthDate: Date) -> Int {
-        let components = Calendar.current.dateComponents([.month], from: birthDate, to: Date())
-        return max(0, components.month ?? 0)
-    }
-
     /// 월령에 맞는 권장 수유 기준 반환
     static func recommendation(forAgeMonths age: Int) -> AgeRecommendation {
         switch age {
