@@ -31,21 +31,7 @@ struct InsightsView: View {
                     }
                 }
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 6) {
-                        Text("📊")
-                            .font(.subheadline)
-                        Text("인사이트")
-                            .font(.headline.bold())
-                            .foregroundColor(Color.appPurple)
-                    }
-                }
-            }
+            .pastelNavigation(emoji: "📊", title: "인사이트", color: .appPurple)
             .task { await loadInsights() }
             .refreshable { await loadInsights() }
         }
@@ -138,10 +124,14 @@ private extension String {
     }
 
     var formattedDate: String {
-        let formatter = ISO8601DateFormatter()
-        guard let date = formatter.date(from: self) else { return self }
-        let display = DateFormatter()
-        display.dateFormat = "MM/dd"
-        return display.string(from: date)
+        guard let date = Self._isoFormatter.date(from: self) else { return self }
+        return Self._displayFormatter.string(from: date)
     }
+
+    private nonisolated(unsafe) static let _isoFormatter = ISO8601DateFormatter()
+    private nonisolated(unsafe) static let _displayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MM/dd"
+        return f
+    }()
 }

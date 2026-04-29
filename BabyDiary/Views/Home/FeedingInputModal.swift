@@ -4,7 +4,7 @@ struct FeedingInputModal: View {
     @Environment(\.dismiss) private var dismiss
     let onSave: (Int) -> Void
 
-    @State private var amount: Double = 120
+    @State private var amount: Double = 160
 
     var body: some View {
         NavigationStack {

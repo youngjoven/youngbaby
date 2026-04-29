@@ -25,21 +25,7 @@ struct AdvisorView: View {
                     emptyStateView
                 }
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 6) {
-                        Text("✨")
-                            .font(.subheadline)
-                        Text("어드바이저")
-                            .font(.headline.bold())
-                            .foregroundColor(Color.appPurple)
-                    }
-                }
-            }
+            .pastelNavigation(emoji: "✨", title: "어드바이저", color: .appPurple)
             .onAppear { Task { await loadAdvice() } }
             .refreshable { await loadAdvice() }
         }

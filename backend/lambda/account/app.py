@@ -8,40 +8,23 @@ import os
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from common import ok, err, user_id
 
 dynamodb = boto3.resource("dynamodb")
 
 
-def _ok(body, status=200):
-    return {
-        "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-        "body": json.dumps(body, ensure_ascii=False),
-    }
-
-
-def _err(status, message):
-    return _ok({"message": message}, status)
-
-
-def _user_id(event):
-    return event["requestContext"]["authorizer"]["claims"]["sub"]
-
-
 def handler(event, context):
     if event["httpMethod"] != "DELETE":
-        return _err(405, "Method Not Allowed")
+        return err(405, "Method Not Allowed")
 
-    uid = _user_id(event)
+    uid = user_id(event)
 
     try:
         _delete_user_data(uid)
-        return _ok({"message": "데이터가 삭제되었습니다."})
+        return ok({"message": "데이터가 삭제되었습니다."})
     except Exception as e:
-        return _err(500, str(e))
+        print(f"[ERROR] Account deletion failed for user: {type(e).__name__}: {e}")
+        return err(500, "계정 삭제 중 오류가 발생했습니다.")
 
 
 def _delete_items_with_sort_key(table_name, uid, sort_key):
@@ -64,15 +47,9 @@ def _delete_items_with_sort_key(table_name, uid, sort_key):
 
 
 def _delete_user_data(uid):
-    # profiles (hash key만 있음)
     dynamodb.Table(os.environ["PROFILES_TABLE"]).delete_item(Key={"userId": uid})
-    # device_tokens (hash key만 있음)
     dynamodb.Table(os.environ["DEVICE_TOKENS_TABLE"]).delete_item(Key={"userId": uid})
-    # feedings (range key: feedingTime)
     _delete_items_with_sort_key(os.environ["FEEDINGS_TABLE"], uid, "feedingTime")
-    # bowels (range key: bowelTime)
     _delete_items_with_sort_key(os.environ["BOWELS_TABLE"], uid, "bowelTime")
-    # insights (range key: generatedAt)
     _delete_items_with_sort_key(os.environ["INSIGHTS_TABLE"], uid, "generatedAt")
-    # llm_quota (range key: date)
     _delete_items_with_sort_key(os.environ["LLM_QUOTA_TABLE"], uid, "date")

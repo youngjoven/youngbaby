@@ -10,10 +10,9 @@ struct HomeView: View {
     @Query private var bowels: [BowelRecord]
     @Environment(\.modelContext) private var modelContext
 
+    @State private var viewModel = HomeViewModel()
     @State private var showFeedingInput = false
     @State private var showBowelInput = false
-    @State private var advisorResponse: AdvisorResponse?
-    @State private var showAdvisorCard = false
 
     init(userId: String, selectedTab: Binding<Int>) {
         self.userId = userId
@@ -42,7 +41,7 @@ struct HomeView: View {
                         todaySummaryCard
                         recordButtonsView
 
-                        if showAdvisorCard, let advice = advisorResponse {
+                        if viewModel.showAdvisorCard, let advice = viewModel.advisorResponse {
                             Button { selectedTab = 2 } label: {
                                 AdvisorCardView(response: advice)
                             }
@@ -55,26 +54,29 @@ struct HomeView: View {
                     .padding()
                 }
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 6) {
-                        Text("🍼").font(.subheadline)
-                        Text("아기 일기장")
-                            .font(.headline.bold())
-                            .foregroundColor(.appPink)
-                    }
+            .pastelNavigation(emoji: "🍼", title: "아기 일기장", color: .appPink)
+            .onAppear {
+                if let profile { viewModel.syncProfile(profile) }
+            }
+            .sheet(isPresented: $showFeedingInput) {
+                FeedingInputModal { amountMl in
+                    viewModel.saveFeedingRecord(
+                        amountMl: amountMl,
+                        userId: userId,
+                        profile: profile,
+                        modelContext: modelContext
+                    )
                 }
             }
-            .onAppear { syncProfileIfNeeded() }
-            .sheet(isPresented: $showFeedingInput) {
-                FeedingInputModal { amountMl in saveFeedingRecord(amountMl: amountMl) }
-            }
             .sheet(isPresented: $showBowelInput) {
-                BowelInputModal { time, condition in saveBowelRecord(time: time, condition: condition) }
+                BowelInputModal { time, condition in
+                    viewModel.saveBowelRecord(
+                        time: time,
+                        condition: condition,
+                        userId: userId,
+                        modelContext: modelContext
+                    )
+                }
             }
         }
     }
@@ -124,15 +126,13 @@ struct HomeView: View {
                 Label("수유 기록하기", systemImage: "plus.circle.fill")
                     .font(.headline).foregroundColor(.white)
                     .frame(maxWidth: .infinity).padding()
-                    .background(RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.appPink))
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color.appPink))
             }
             Button(action: { showBowelInput = true }) {
                 Label("배변 기록하기", systemImage: "plus.circle.fill")
                     .font(.headline).foregroundColor(.white)
                     .frame(maxWidth: .infinity).padding()
-                    .background(RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.appGreen))
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color.appGreen))
             }
         }
     }
@@ -148,65 +148,16 @@ struct HomeView: View {
         return "\(last.bowelCondition.emoji) 최근 \(last.bowelCondition.displayName)"
     }
 
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f
+    }()
+
     private var nextFeedingTimeText: String {
         guard let last = feedings.first, let ageMonths = profile?.ageInMonths else { return "-" }
         let next = AgeCalculatorService.nextFeedingTime(lastFeedingTime: last.feedingTime, ageMonths: ageMonths)
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: next)
-    }
-
-    // MARK: - 프로필 동기화
-
-    private func syncProfileIfNeeded() {
-        guard let profile = profile else { return }
-        Task {
-            try? await APIService.shared.uploadProfile(
-                babyName: profile.babyName,
-                babyBirthDate: profile.babyBirthDate,
-                motherName: profile.motherName
-            )
-        }
-    }
-
-    // MARK: - 기록 저장
-
-    private func saveFeedingRecord(amountMl: Int) {
-        guard amountMl > 0 else { return }
-        let record = FeedingRecord(userId: userId, amountMl: amountMl)
-        modelContext.insert(record)
-
-        if let profile = profile {
-            let nextTime = AgeCalculatorService.nextFeedingTime(
-                lastFeedingTime: record.feedingTime,
-                ageMonths: profile.ageInMonths
-            )
-            Task {
-                await AlarmService.scheduleAlarm(
-                    nextFeedingTime: nextTime,
-                    cognitoUserId: profile.cognitoUserId
-                )
-                try? await APIService.shared.uploadFeeding(
-                    feedingTime: record.feedingTime,
-                    amountMl: amountMl
-                )
-                if let advice = try? await APIService.shared.fetchAdvice() {
-                    advisorResponse = advice
-                    withAnimation { showAdvisorCard = true }
-                }
-            }
-        }
-    }
-
-    private func saveBowelRecord(time: Date, condition: BowelCondition) {
-        let record = BowelRecord(userId: userId, bowelTime: time, condition: condition)
-        modelContext.insert(record)
-        Task {
-            try? await APIService.shared.uploadBowel(
-                bowelTime: time,
-                condition: condition.rawValue
-            )
-        }
+        return Self.timeFormatter.string(from: next)
     }
 }
 

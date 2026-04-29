@@ -5,17 +5,54 @@ import Foundation
 class AuthManager: ObservableObject {
     @Published private(set) var isLoggedIn = false
     @Published private(set) var userId = ""
+    @Published private(set) var isInitializing = true
     private(set) var accessToken = ""
 
-    func login(idToken: String, accessToken: String) async {
+    private static let refreshTokenKey = "cognitoRefreshToken"
+    private static let autoLoginEnabledKey = "autoLoginEnabled"
+    private var hasAttemptedAutoLogin = false
+
+    static var isAutoLoginEnabled: Bool {
+        UserDefaults.standard.object(forKey: autoLoginEnabledKey) as? Bool ?? true
+    }
+
+    /// 앱 시작 시 한 번 호출 — Keychain의 refreshToken으로 자동 로그인 시도
+    func tryAutoLogin() async {
+        guard !hasAttemptedAutoLogin else { return }
+        hasAttemptedAutoLogin = true
+        defer { isInitializing = false }
+
+        guard Self.isAutoLoginEnabled,
+              let refreshToken = KeychainHelper.read(forKey: Self.refreshTokenKey) else { return }
+
+        do {
+            let tokens = try await CognitoService.refresh(refreshToken: refreshToken)
+            await APIService.shared.setIdToken(tokens.idToken)
+            self.accessToken = tokens.accessToken
+            self.userId = Self.extractUserId(from: tokens.idToken)
+            self.isLoggedIn = true
+        } catch {
+            // 자동 로그인 실패 — 토큰은 그대로 두고 사용자가 수동 로그인하도록 함
+            // (네트워크 일시 오류와 만료/무효를 구분하기 어려우므로 보수적으로 보존)
+            print("[AutoLogin] failed: \(error)")
+        }
+    }
+
+    func login(idToken: String, accessToken: String, refreshToken: String) async {
         await APIService.shared.setIdToken(idToken)
         self.accessToken = accessToken
         self.userId = Self.extractUserId(from: idToken)
+        if Self.isAutoLoginEnabled {
+            KeychainHelper.save(refreshToken, forKey: Self.refreshTokenKey)
+        } else {
+            KeychainHelper.delete(forKey: Self.refreshTokenKey)
+        }
         isLoggedIn = true
     }
 
     func logout() {
         Task { await APIService.shared.setIdToken("") }
+        KeychainHelper.delete(forKey: Self.refreshTokenKey)
         accessToken = ""
         userId = ""
         isLoggedIn = false

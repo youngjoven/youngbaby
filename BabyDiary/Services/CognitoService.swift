@@ -38,8 +38,8 @@ enum CognitoService {
         try await request(target: "AWSCognitoIdentityProviderService.ConfirmSignUp", body: body)
     }
 
-    // MARK: - 로그인 → (IdToken, AccessToken) 반환
-    static func signIn(email: String, password: String) async throws -> (idToken: String, accessToken: String) {
+    // MARK: - 로그인 → (IdToken, AccessToken, RefreshToken) 반환
+    static func signIn(email: String, password: String) async throws -> (idToken: String, accessToken: String, refreshToken: String) {
         let body: [String: Any] = [
             "AuthFlow": "USER_PASSWORD_AUTH",
             "ClientId": AppConfig.cognitoClientId,
@@ -49,9 +49,28 @@ enum CognitoService {
         guard
             let result = json["AuthenticationResult"] as? [String: Any],
             let idToken = result["IdToken"] as? String,
-            let accessToken = result["AccessToken"] as? String
+            let accessToken = result["AccessToken"] as? String,
+            let refreshToken = result["RefreshToken"] as? String
         else {
             throw CognitoError.authFailed("로그인에 실패했습니다. 이메일과 비밀번호를 확인하세요.")
+        }
+        return (idToken: idToken, accessToken: accessToken, refreshToken: refreshToken)
+    }
+
+    // MARK: - 자동 로그인용 토큰 갱신 (RefreshToken은 응답에 포함되지 않음, 기존 값 재사용)
+    static func refresh(refreshToken: String) async throws -> (idToken: String, accessToken: String) {
+        let body: [String: Any] = [
+            "AuthFlow": "REFRESH_TOKEN_AUTH",
+            "ClientId": AppConfig.cognitoClientId,
+            "AuthParameters": ["REFRESH_TOKEN": refreshToken]
+        ]
+        let json = try await request(target: "AWSCognitoIdentityProviderService.InitiateAuth", body: body)
+        guard
+            let result = json["AuthenticationResult"] as? [String: Any],
+            let idToken = result["IdToken"] as? String,
+            let accessToken = result["AccessToken"] as? String
+        else {
+            throw CognitoError.authFailed("자동 로그인에 실패했습니다.")
         }
         return (idToken: idToken, accessToken: accessToken)
     }

@@ -2,26 +2,14 @@ import SwiftUI
 
 struct AuthView: View {
     @EnvironmentObject private var authManager: AuthManager
-
-    @State private var mode: Mode = .signIn
-    @State private var email = ""
-    @State private var password = ""
-    @State private var confirmPassword = ""
-    @State private var confirmCode = ""
-    @State private var pendingEmail = ""
-    @State private var isLoading = false
-    @State private var errorMessage = ""
-    @State private var showConfirm = false
-    @State private var showAlert = false
-    @State private var alertMessage = ""
-
-    enum Mode { case signIn, signUp }
+    @State private var vm = AuthViewModel()
+    @AppStorage("autoLoginEnabled") private var autoLoginEnabled = true
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 header
-                if showConfirm {
+                if vm.showConfirm {
                     confirmView
                 } else {
                     formView
@@ -31,10 +19,10 @@ struct AuthView: View {
             .padding(.bottom, 40)
         }
         .background(Color("PastelBackground").ignoresSafeArea())
-        .alert("오류", isPresented: $showAlert) {
+        .alert("오류", isPresented: $vm.showAlert) {
             Button("확인", role: .cancel) {}
         } message: {
-            Text(alertMessage)
+            Text(vm.alertMessage)
         }
     }
 
@@ -58,41 +46,49 @@ struct AuthView: View {
 
     private var formView: some View {
         VStack(spacing: 16) {
-            // 탭 선택
             HStack(spacing: 0) {
-                tabButton("로그인", selected: mode == .signIn) { mode = .signIn; clearFields() }
-                tabButton("회원가입", selected: mode == .signUp) { mode = .signUp; clearFields() }
+                tabButton("로그인", selected: vm.mode == .signIn) { vm.switchMode(to: .signIn) }
+                tabButton("회원가입", selected: vm.mode == .signUp) { vm.switchMode(to: .signUp) }
             }
             .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(white: 0.9)))
 
-            // 입력 필드
             VStack(spacing: 12) {
-                inputField("이메일", systemImage: "envelope", text: $email, keyboard: .emailAddress)
-                secureField("비밀번호", systemImage: "lock", text: $password)
-                if mode == .signUp {
-                    secureField("비밀번호 확인", systemImage: "lock.fill", text: $confirmPassword)
+                inputField("이메일", systemImage: "envelope", text: $vm.email, keyboard: .emailAddress)
+                secureField("비밀번호", systemImage: "lock", text: $vm.password)
+                if vm.mode == .signUp {
+                    secureField("비밀번호 확인", systemImage: "lock.fill", text: $vm.confirmPassword)
                 }
             }
 
-            if mode == .signUp {
+            if vm.mode == .signUp {
                 Text("비밀번호: 8자 이상, 대문자·소문자·숫자·특수문자(!@#$ 등) 포함")
                     .font(.caption)
                     .foregroundColor(Color(white: 0.5))
                     .multilineTextAlignment(.center)
             }
 
-            if !errorMessage.isEmpty {
-                Text(errorMessage)
+            if !vm.errorMessage.isEmpty {
+                Text(vm.errorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
             }
 
+            if vm.mode == .signIn {
+                Toggle(isOn: $autoLoginEnabled) {
+                    Label("자동 로그인", systemImage: "key.fill")
+                        .font(.subheadline)
+                        .foregroundColor(Color(white: 0.3))
+                }
+                .tint(Color.appPink)
+                .padding(.horizontal, 4)
+            }
+
             actionButton(
-                title: mode == .signIn ? "로그인" : "회원가입",
-                enabled: isFormValid,
-                action: handleAction
+                title: vm.mode == .signIn ? "로그인" : "회원가입",
+                enabled: vm.isFormValid,
+                action: { vm.handleAction(authManager: authManager) }
             )
         }
     }
@@ -107,16 +103,16 @@ struct AuthView: View {
                     .foregroundColor(Color.appPink)
                 Text("이메일 인증")
                     .font(.title2.bold())
-                Text("\(pendingEmail)으로\n발송된 인증 코드 6자리를 입력하세요.")
+                Text("\(vm.pendingEmail)으로\n발송된 인증 코드 6자리를 입력하세요.")
                     .font(.subheadline)
                     .foregroundColor(Color(white: 0.45))
                     .multilineTextAlignment(.center)
             }
 
-            inputField("인증 코드 6자리", systemImage: "number", text: $confirmCode, keyboard: .numberPad)
+            inputField("인증 코드 6자리", systemImage: "number", text: $vm.confirmCode, keyboard: .numberPad)
 
-            if !errorMessage.isEmpty {
-                Text(errorMessage)
+            if !vm.errorMessage.isEmpty {
+                Text(vm.errorMessage)
                     .font(.caption)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
@@ -124,14 +120,13 @@ struct AuthView: View {
 
             actionButton(
                 title: "인증 완료",
-                enabled: confirmCode.count == 6,
-                action: handleConfirm
+                enabled: vm.confirmCode.count == 6,
+                action: { vm.handleConfirm(authManager: authManager) }
             )
 
             Button("← 로그인 화면으로 돌아가기") {
-                showConfirm = false
-                mode = .signIn
-                clearFields()
+                vm.showConfirm = false
+                vm.switchMode(to: .signIn)
             }
             .font(.caption)
             .foregroundColor(Color(white: 0.5))
@@ -163,7 +158,7 @@ struct AuthView: View {
             TextField("", text: text)
                 .textFieldStyle(.plain)
                 .keyboardType(keyboard)
-                .autocapitalization(.none)
+                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
             Divider()
         }
@@ -191,7 +186,7 @@ struct AuthView: View {
     private func actionButton(title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Group {
-                if isLoading {
+                if vm.isLoading {
                     ProgressView().tint(.white)
                 } else {
                     Text(title).font(.headline).foregroundColor(.white)
@@ -201,68 +196,11 @@ struct AuthView: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(enabled && !isLoading
+                    .fill(enabled && !vm.isLoading
                           ? Color.appPink
                           : Color.gray.opacity(0.4))
             )
         }
-        .disabled(!enabled || isLoading)
-    }
-
-    // MARK: - 유효성 검사
-
-    private var isFormValid: Bool {
-        let emailOK = email.contains("@") && email.contains(".")
-        let passwordOK = password.count >= 8
-        if mode == .signIn { return emailOK && passwordOK }
-        return emailOK && passwordOK && password == confirmPassword
-    }
-
-    // MARK: - 액션
-
-    private func handleAction() {
-        errorMessage = ""
-        isLoading = true
-        Task {
-            defer { isLoading = false }
-            do {
-                if mode == .signIn {
-                    let tokens = try await CognitoService.signIn(email: email, password: password)
-                    await authManager.login(idToken: tokens.idToken, accessToken: tokens.accessToken)
-                } else {
-                    try await CognitoService.signUp(email: email, password: password)
-                    pendingEmail = email
-                    showConfirm = true
-                }
-            } catch {
-                errorMessage = error.localizedDescription
-                alertMessage = error.localizedDescription
-                showAlert = true
-            }
-        }
-    }
-
-    private func handleConfirm() {
-        errorMessage = ""
-        isLoading = true
-        Task {
-            defer { isLoading = false }
-            do {
-                try await CognitoService.confirmSignUp(email: pendingEmail, code: confirmCode)
-                let tokens = try await CognitoService.signIn(email: pendingEmail, password: password)
-                await authManager.login(idToken: tokens.idToken, accessToken: tokens.accessToken)
-            } catch {
-                errorMessage = error.localizedDescription
-                alertMessage = error.localizedDescription
-                showAlert = true
-            }
-        }
-    }
-
-    private func clearFields() {
-        email = ""
-        password = ""
-        confirmPassword = ""
-        errorMessage = ""
+        .disabled(!enabled || vm.isLoading)
     }
 }

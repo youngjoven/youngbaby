@@ -86,11 +86,14 @@ Thumbs.db
 *.log
 logs/
 
-# IDE
+# IDE / 로컬 도구 설정
 .idea/
 .vscode/
+.claude/
+.obsidian/
 *.swp
 *.swo
+*.canvas
 
 # 빌드 산출물
 build/

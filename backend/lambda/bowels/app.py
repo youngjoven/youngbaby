@@ -4,47 +4,23 @@ POST /bowels  - 배변 기록 생성
 GET  /bowels  - 배변 기록 목록 조회 (?from=ISO8601&to=ISO8601)
 DELETE /bowels/{id} - 배변 기록 삭제 (id = bowelTime)
 """
-import json
 import os
-import decimal
 from datetime import datetime, timezone
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from common import ok, err, user_id
+from common.validation import parse_json_body, validate_iso8601
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["BOWELS_TABLE"])
 
-
-class _DecimalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return int(obj) if obj % 1 == 0 else float(obj)
-        return super().default(obj)
-
-
-def _ok(body, status=200):
-    return {
-        "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-        "body": json.dumps(body, cls=_DecimalEncoder, ensure_ascii=False),
-    }
-
-
-def _err(status, message):
-    return _ok({"message": message}, status)
-
-
-def _user_id(event):
-    return event["requestContext"]["authorizer"]["claims"]["sub"]
+ALLOWED_CONDITIONS = {"hard", "normal", "soft"}
 
 
 def handler(event, context):
     method = event["httpMethod"]
-    uid = _user_id(event)
+    uid = user_id(event)
 
     if method == "POST":
         return _create(event, uid)
@@ -52,21 +28,21 @@ def handler(event, context):
         return _list(event, uid)
     if method == "DELETE":
         return _delete(event, uid)
-    return _err(405, "Method Not Allowed")
+    return err(405, "Method Not Allowed")
 
 
 def _create(event, uid):
-    body = json.loads(event.get("body") or "{}")
+    body = parse_json_body(event)
+    if body is None:
+        return err(400, "Invalid JSON body")
+
     bowel_time = body.get("bowelTime")
     condition = body.get("condition")
 
-    if not bowel_time or not condition:
-        return _err(400, "bowelTime and condition are required")
-
-    # condition 유효성 검사
-    allowed = {"hard", "normal", "soft"}
-    if condition not in allowed:
-        return _err(400, f"condition must be one of {allowed}")
+    if e := validate_iso8601(bowel_time, "bowelTime"):
+        return err(400, e)
+    if not condition or condition not in ALLOWED_CONDITIONS:
+        return err(400, f"condition must be one of {ALLOWED_CONDITIONS}")
 
     item = {
         "userId": uid,
@@ -75,7 +51,7 @@ def _create(event, uid):
         "createdAt": datetime.now(timezone.utc).isoformat(),
     }
     table.put_item(Item=item)
-    return _ok(item, 201)
+    return ok(item, 201)
 
 
 def _list(event, uid):
@@ -95,15 +71,15 @@ def _list(event, uid):
             ScanIndexForward=False,
             Limit=100,
         )
-    return _ok(result.get("Items", []))
+    return ok(result.get("Items", []))
 
 
 def _delete(event, uid):
     path_params = event.get("pathParameters") or {}
-    bowel_time = path_params.get("id")  # id = bowelTime (sort key)
+    bowel_time = path_params.get("id")
 
     if not bowel_time:
-        return _err(400, "bowelTime (id) is required")
+        return err(400, "bowelTime (id) is required")
 
     table.delete_item(Key={"userId": uid, "bowelTime": bowel_time})
-    return _ok({"message": "deleted"})
+    return ok({"message": "deleted"})

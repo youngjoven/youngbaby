@@ -64,21 +64,7 @@ struct RecordView: View {
                     .background(Color("PastelBackground"))
                 }
             }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(Color("PastelBackground"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack(spacing: 6) {
-                        Text("📋")
-                            .font(.subheadline)
-                        Text("기록")
-                            .font(.headline.bold())
-                            .foregroundColor(Color.appPink)
-                    }
-                }
-            }
+            .pastelNavigation(emoji: "📋", title: "기록", color: .appPink)
         }
     }
 
